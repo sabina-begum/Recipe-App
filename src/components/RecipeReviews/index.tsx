@@ -61,7 +61,7 @@ const RecipeReviews = ({
   // Load reviews from localStorage (simulated database)
   useEffect(() => {
     const savedReviews: Review[] = JSON.parse(
-      localStorage.getItem(`reviews_${recipeId}`) || "[]"
+      localStorage.getItem(`reviews_${recipeId}`) || "[]",
     );
     setReviews(savedReviews);
   }, [recipeId]);
@@ -102,7 +102,7 @@ const RecipeReviews = ({
       setReviews(updatedReviews);
       localStorage.setItem(
         `reviews_${recipeId}`,
-        JSON.stringify(updatedReviews)
+        JSON.stringify(updatedReviews),
       );
 
       setUserReview({
@@ -128,15 +128,18 @@ const RecipeReviews = ({
         return;
       }
 
-      setReviews((prev) =>
-        prev.map((review) =>
-          review.id === reviewId
-            ? { ...review, likes: review.likes + 1 }
-            : review
-        )
+      const updatedReviews = reviews.map((review) =>
+        review.id === reviewId
+          ? { ...review, likes: review.likes + 1 }
+          : review,
+      );
+      setReviews(updatedReviews);
+      localStorage.setItem(
+        `reviews_${recipeId}`,
+        JSON.stringify(updatedReviews),
       );
     },
-    [currentUser]
+    [currentUser, reviews, recipeId],
   );
 
   const handleMarkHelpful = useCallback(
@@ -146,15 +149,18 @@ const RecipeReviews = ({
         return;
       }
 
-      setReviews((prev) =>
-        prev.map((review) =>
-          review.id === reviewId
-            ? { ...review, helpful: review.helpful + 1 }
-            : review
-        )
+      const updatedReviews = reviews.map((review) =>
+        review.id === reviewId
+          ? { ...review, helpful: review.helpful + 1 }
+          : review,
+      );
+      setReviews(updatedReviews);
+      localStorage.setItem(
+        `reviews_${recipeId}`,
+        JSON.stringify(updatedReviews),
       );
     },
-    [currentUser]
+    [currentUser, reviews, recipeId],
   );
 
   const averageRating =
@@ -270,8 +276,8 @@ const RecipeReviews = ({
                     userReview.difficulty === index + 1
                       ? "bg-green-600 text-white"
                       : darkMode
-                      ? "bg-neutral-700 text-stone-300"
-                      : "bg-gray-200 text-gray-700"
+                        ? "bg-neutral-700 text-stone-300"
+                        : "bg-gray-200 text-gray-700"
                   }`}
                 >
                   {level}
@@ -370,8 +376,8 @@ const RecipeReviews = ({
                 loading
                   ? "bg-neutral-600 cursor-not-allowed"
                   : darkMode
-                  ? "bg-orange-600 hover:bg-orange-700 text-white"
-                  : "bg-orange-500 hover:bg-orange-600 text-white"
+                    ? "bg-orange-600 hover:bg-orange-700 text-white"
+                    : "bg-orange-500 hover:bg-orange-600 text-white"
               }`}
             >
               {loading ? "Submitting..." : "Submit Review"}
@@ -406,7 +412,7 @@ const RecipeReviews = ({
             .sort(
               (a, b) =>
                 new Date(b.timestamp).getTime() -
-                new Date(a.timestamp).getTime()
+                new Date(a.timestamp).getTime(),
             )
             .map((review: Review) => (
               <div
