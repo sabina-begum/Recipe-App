@@ -22,7 +22,8 @@ import { featuredRecipes } from "../data/recipes";
 import { getUserDisplayName } from "../utils/userUtils";
 
 const EXAMPLE_IMAGE_PLACEHOLDER =
-  featuredRecipes[0]?.image ?? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400";
+  featuredRecipes[0]?.image ??
+  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400";
 
 interface UserRecipeSubmissionProps {
   darkMode: boolean;
@@ -469,4 +470,3 @@ const UserRecipeSubmission: React.FC<UserRecipeSubmissionProps> = ({
 };
 
 export default UserRecipeSubmission;
-
