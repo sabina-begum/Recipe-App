@@ -65,27 +65,67 @@ const ShoppingListGenerator = ({ darkMode }: ShoppingListGeneratorProps) => {
     }
   }, [currentUser]);
 
+  const loadShoppingList = useCallback(() => {
+    if (!currentUser) return;
+    try {
+      const storageKey = `shoppingList_${currentUser.uid}`;
+      const saved = JSON.parse(
+        localStorage.getItem(storageKey) || "[]",
+      ) as ShoppingItem[];
+      setShoppingList(saved);
+    } catch (error) {
+      console.error("Error loading shopping list:", error);
+      setShoppingList([]);
+    }
+  }, [currentUser]);
+
   useEffect(() => {
     if (currentUser) {
       loadMealPlan();
+      loadShoppingList();
     }
-  }, [currentUser, loadMealPlan]);
+  }, [currentUser, loadMealPlan, loadShoppingList]);
 
   const removeItem = (index: number) => {
-    setShoppingList((prev) => prev.filter((_, i) => i !== index));
+    const updated = shoppingList.filter((_, i) => i !== index);
+    setShoppingList(updated);
+    saveShoppingList(updated);
   };
+
+  const toggleItemChecked = (index: number) => {
+    const updated = shoppingList.map((item, i) =>
+      i === index ? { ...item, checked: !item.checked } : item,
+    );
+    setShoppingList(updated);
+    saveShoppingList(updated);
+  };
+
+  const saveShoppingList = useCallback(
+    (items: ShoppingItem[]) => {
+      if (!currentUser) return;
+      try {
+        const storageKey = `shoppingList_${currentUser.uid}`;
+        localStorage.setItem(storageKey, JSON.stringify(items));
+      } catch (error) {
+        console.error("Error saving shopping list:", error);
+      }
+    },
+    [currentUser],
+  );
 
   const addCustomItem = () => {
     if (!newItem.ingredient) return;
-    setShoppingList((prev) => [
-      ...prev,
+    const updated = [
+      ...shoppingList,
       {
         ...newItem,
         recipes: ["Custom"],
         checked: false,
         isCustom: true,
       },
-    ]);
+    ];
+    setShoppingList(updated);
+    saveShoppingList(updated);
     setNewItem({
       ingredient: "",
       quantity: "1",
@@ -119,7 +159,10 @@ const ShoppingListGenerator = ({ darkMode }: ShoppingListGeneratorProps) => {
       >
         <ShoppingListHeader
           onAddItem={addCustomItem}
-          onClearList={() => setShoppingList([])}
+          onClearList={() => {
+            setShoppingList([]);
+            saveShoppingList([]);
+          }}
           darkMode={darkMode}
         />
         <ShoppingListForm
@@ -131,6 +174,7 @@ const ShoppingListGenerator = ({ darkMode }: ShoppingListGeneratorProps) => {
         <ShoppingListItems
           items={shoppingList}
           onRemoveItem={removeItem}
+          onToggleChecked={toggleItemChecked}
           darkMode={darkMode}
         />
         {shoppingList.length === 0 && (
@@ -145,4 +189,3 @@ const ShoppingListGenerator = ({ darkMode }: ShoppingListGeneratorProps) => {
 };
 
 export default ShoppingListGenerator;
-
