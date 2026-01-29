@@ -18,7 +18,11 @@ import { db } from "../firebase/config";
 import { mealCategories } from "../data/mealCategories";
 import { cuisineOptions } from "../data/cuisineOptions";
 import { difficultyLevels } from "../data/difficultyLevels";
+import { featuredRecipes } from "../data/recipes";
 import { getUserDisplayName } from "../utils/userUtils";
+
+const EXAMPLE_IMAGE_PLACEHOLDER =
+  featuredRecipes[0]?.image ?? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400";
 
 interface UserRecipeSubmissionProps {
   darkMode: boolean;
@@ -445,7 +449,7 @@ const UserRecipeSubmission: React.FC<UserRecipeSubmissionProps> = ({
                   ? "bg-gray-800 border-gray-600 text-gray-100"
                   : "bg-white border-gray-300 text-gray-800"
               }`}
-              placeholder="https://example.com/image.jpg"
+              placeholder={EXAMPLE_IMAGE_PLACEHOLDER}
             />
           </div>
 
