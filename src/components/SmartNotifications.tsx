@@ -45,8 +45,6 @@ const SmartNotifications = ({ darkMode }: { darkMode: boolean }) => {
   });
   const [showSettings, setShowSettings] = useState(false);
 
-  
-
   const loadNotifications = useCallback(() => {
     if (!currentUser) return;
     try {
@@ -118,7 +116,9 @@ const SmartNotifications = ({ darkMode }: { darkMode: boolean }) => {
 
   const deleteNotification = (notificationId: number) => {
     if (!currentUser) return;
-    const updated = notifications.filter((n: Notification) => n.id !== notificationId);
+    const updated = notifications.filter(
+      (n: Notification) => n.id !== notificationId,
+    );
     setNotifications(updated);
     if (!isDemoUser) {
       localStorage.setItem(
@@ -404,4 +404,3 @@ const SmartNotifications = ({ darkMode }: { darkMode: boolean }) => {
 };
 
 export default SmartNotifications;
-

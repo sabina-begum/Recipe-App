@@ -64,11 +64,8 @@ const LeftoverIntegration: React.FC<LeftoverIntegrationProps> = ({
           const recipeIngreds = (r.ingredients || []).map((i) =>
             i.toLowerCase().trim(),
           );
-          const hasOverlap = normalized.some(
-            (curr) =>
-              recipeIngreds.some(
-                (ri) => ri.includes(curr) || curr.includes(ri),
-              ),
+          const hasOverlap = normalized.some((curr) =>
+            recipeIngreds.some((ri) => ri.includes(curr) || curr.includes(ri)),
           );
           return hasOverlap;
         })
