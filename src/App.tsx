@@ -95,7 +95,7 @@ function App() {
       recipe.strInstructions?.toLowerCase() || "",
       ...Array.from(
         { length: 20 },
-        (_, i) => recipe[`strIngredient${i + 1}`]?.toLowerCase() || ""
+        (_, i) => recipe[`strIngredient${i + 1}`]?.toLowerCase() || "",
       ),
     ].join(" ");
 
@@ -114,7 +114,7 @@ function App() {
 
       try {
         const url = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(
-          query.trim()
+          query.trim(),
         )}`;
 
         const json = await performanceService.cachedFetch(url);
@@ -129,14 +129,14 @@ function App() {
 
         // Filter out recipes containing pork or alcohol
         const filteredMeals = meals.filter(
-          (meal: Recipe) => !containsPorkOrAlcohol(meal)
+          (meal: Recipe) => !containsPorkOrAlcohol(meal),
         );
 
         if (!filteredMeals.length) {
           setSelected(null);
           setError(null);
           setToast(
-            `No suitable recipes found for "${query}". Try searching for something else!`
+            `No suitable recipes found for "${query}". Try searching for something else!`,
           );
           return;
         }
@@ -172,7 +172,7 @@ function App() {
         setLoading(false);
       }
     },
-    [fetchNutritionData, setNutritionData, navigate]
+    [fetchNutritionData, setNutritionData, navigate],
   );
 
   // Original initial search logic
@@ -186,8 +186,8 @@ function App() {
   }, [handleSearch, initialSearch, isAuthPage]);
 
   return (
-    <SecurityProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <SecurityProvider>
         <HelmetProvider>
           <ModalProvider>
             <DarkModeProvider>
@@ -217,8 +217,8 @@ function App() {
             </DarkModeProvider>
           </ModalProvider>
         </HelmetProvider>
-      </AuthProvider>
-    </SecurityProvider>
+      </SecurityProvider>
+    </AuthProvider>
   );
 }
 
