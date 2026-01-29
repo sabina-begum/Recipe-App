@@ -89,13 +89,6 @@ const MealPlanningCalendar: React.FC<MealPlanningCalendarProps> = ({
     setLoading(false);
   }, [currentUser, isDemoUser, currentDate]);
 
-  useEffect(() => {
-    if (currentUser) {
-      loadMealPlan();
-      loadAvailableRecipes();
-    }
-  }, [currentUser, currentDate, loadMealPlan, loadAvailableRecipes]);
-
   const loadAvailableRecipes = useCallback((): void => {
     try {
       const byId = new Map<string, Recipe>();
@@ -111,26 +104,64 @@ const MealPlanningCalendar: React.FC<MealPlanningCalendarProps> = ({
           }>;
           favorites.forEach((fav) => {
             const id = String(fav.id ?? "");
-            if (id) byId.set(id, { id, name: (fav.title ?? fav.name) || "Unknown", category: fav.category || "Other", source: "favorite" });
+            if (id)
+              byId.set(id, {
+                id,
+                name: (fav.title ?? fav.name) || "Unknown",
+                category: fav.category || "Other",
+                source: "favorite",
+              });
           });
-          const collections = (demo.demoData?.collections || []) as Array<{ recipes?: Array<{ id: string; name?: string; category?: string }> }>;
+          const collections = (demo.demoData?.collections || []) as Array<{
+            recipes?: Array<{ id: string; name?: string; category?: string }>;
+          }>;
           collections.forEach((col) => {
             (col.recipes || []).forEach((r) => {
               const id = String(r.id ?? "");
-              if (id && !byId.has(id)) byId.set(id, { id, name: (r.name as string) || "Unknown", category: (r.category as string) || "Other", source: "collection" });
+              if (id && !byId.has(id))
+                byId.set(id, {
+                  id,
+                  name: (r.name as string) || "Unknown",
+                  category: (r.category as string) || "Other",
+                  source: "collection",
+                });
             });
           });
         } else {
-          const favorites = JSON.parse(localStorage.getItem(`favorites_${currentUser.uid}`) || "[]") as Array<{ id?: string; recipeId?: string; title?: string; name?: string; category?: string }>;
+          const favorites = JSON.parse(
+            localStorage.getItem(`favorites_${currentUser.uid}`) || "[]",
+          ) as Array<{
+            id?: string;
+            recipeId?: string;
+            title?: string;
+            name?: string;
+            category?: string;
+          }>;
           favorites.forEach((fav) => {
             const id = String(fav.id ?? fav.recipeId ?? "");
-            if (id) byId.set(id, { id, name: (fav.title ?? fav.name) || "Unknown", category: fav.category || "Other", source: "favorite" });
+            if (id)
+              byId.set(id, {
+                id,
+                name: (fav.title ?? fav.name) || "Unknown",
+                category: fav.category || "Other",
+                source: "favorite",
+              });
           });
-          const collections = JSON.parse(localStorage.getItem(`collections_${currentUser.uid}`) || "[]") as Array<{ recipes?: Array<{ id: string; name?: string; category?: string }> }>;
+          const collections = JSON.parse(
+            localStorage.getItem(`collections_${currentUser.uid}`) || "[]",
+          ) as Array<{
+            recipes?: Array<{ id: string; name?: string; category?: string }>;
+          }>;
           collections.forEach((col) => {
             (col.recipes || []).forEach((r) => {
               const id = String(r.id ?? "");
-              if (id && !byId.has(id)) byId.set(id, { id, name: (r.name as string) || "Unknown", category: (r.category as string) || "Other", source: "collection" });
+              if (id && !byId.has(id))
+                byId.set(id, {
+                  id,
+                  name: (r.name as string) || "Unknown",
+                  category: (r.category as string) || "Other",
+                  source: "collection",
+                });
             });
           });
         }
@@ -138,16 +169,35 @@ const MealPlanningCalendar: React.FC<MealPlanningCalendarProps> = ({
 
       if (byId.size === 0) {
         featuredRecipes.forEach((r) => {
-          byId.set(r.id, { id: r.id, name: r.name, category: r.category || "Other", source: "featured" });
+          byId.set(r.id, {
+            id: r.id,
+            name: r.name,
+            category: r.category || "Other",
+            source: "featured",
+          });
         });
       }
 
       setAvailableRecipes(Array.from(byId.values()));
     } catch (error) {
       console.error("Error loading recipes:", error);
-      setAvailableRecipes(featuredRecipes.map((r) => ({ id: r.id, name: r.name, category: r.category || "Other", source: "featured" })));
+      setAvailableRecipes(
+        featuredRecipes.map((r) => ({
+          id: r.id,
+          name: r.name,
+          category: r.category || "Other",
+          source: "featured",
+        })),
+      );
     }
   }, [currentUser, isDemoUser]);
+
+  useEffect(() => {
+    if (currentUser) {
+      loadMealPlan();
+      loadAvailableRecipes();
+    }
+  }, [currentUser, currentDate, loadMealPlan, loadAvailableRecipes]);
 
   const saveMealPlan = (newMeals: MealsState): void => {
     try {
@@ -615,4 +665,3 @@ const MealPlanningCalendar: React.FC<MealPlanningCalendarProps> = ({
 };
 
 export default MealPlanningCalendar;
-
