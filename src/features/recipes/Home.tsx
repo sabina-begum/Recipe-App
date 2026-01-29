@@ -421,7 +421,14 @@ export default function HomePage({
         {/* Reviews */}
         <section className="bg-card rounded-lg shadow-sm p-6">
           <h2 className="text-xl font-semibold mb-4">Reviews</h2>
-          <RecipeReviews recipeId={selected.idMeal} darkMode={darkMode} />
+          <RecipeReviews
+            recipeId={selected.idMeal}
+            recipeName={
+              (selected as { strMeal?: string; name?: string }).strMeal ??
+              (selected as { strMeal?: string; name?: string }).name
+            }
+            darkMode={darkMode}
+          />
         </section>
       </div>
     </div>
