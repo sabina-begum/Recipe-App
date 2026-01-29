@@ -147,7 +147,11 @@ export default function HomePage({
   // Use real recipe description when available; otherwise fall back to generated
   const memoizedDescription = useMemo(() => {
     if (!selected) return "";
-    const s = selected as { description?: string; strInstructions?: string; strMeal?: string };
+    const s = selected as {
+      description?: string;
+      strInstructions?: string;
+      strMeal?: string;
+    };
     if (s.description?.trim()) return s.description.trim();
     if (s.strInstructions?.trim()) {
       const max = 220;
