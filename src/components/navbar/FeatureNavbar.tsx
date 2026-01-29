@@ -39,12 +39,29 @@ import {
   LogIn,
 } from "lucide-react";
 
+const FEATURE_NAV_STORAGE = "culinaria_feature_nav_section";
+
 interface FeatureNavbarProps {
   darkMode: boolean;
 }
 
 function FeatureNavbar({ darkMode }: FeatureNavbarProps) {
-  const [activeSection, setActiveSection] = useState("discover");
+  const [activeSection, setActiveSection] = useState(() => {
+    try {
+      return localStorage.getItem(FEATURE_NAV_STORAGE) || "discover";
+    } catch {
+      return "discover";
+    }
+  });
+
+  const setSection = (id: string) => {
+    setActiveSection(id);
+    try {
+      localStorage.setItem(FEATURE_NAV_STORAGE, id);
+    } catch {
+      // ignore
+    }
+  };
 
   const sections = [
     {
@@ -166,15 +183,15 @@ function FeatureNavbar({ darkMode }: FeatureNavbarProps) {
           {sections.map((section) => (
             <button
               key={section.id}
-              onClick={() => setActiveSection(section.id)}
+              onClick={() => setSection(section.id)}
               className={`flex items-center space-x-2 sm:space-x-3 px-3 sm:px-5 py-3 text-sm sm:text-base font-semibold rounded-t-xl transition-all duration-200 whitespace-nowrap flex-shrink-0 relative ${
                 activeSection === section.id
                   ? darkMode
                     ? "bg-black text-green-300 shadow-lg"
                     : "bg-white text-green-700 shadow-lg border border-orange-200"
                   : darkMode
-                  ? "text-stone-300 hover:text-green-300 hover:bg-stone-800"
-                  : "text-gray-700 hover:text-green-700 hover:bg-white hover:shadow-md"
+                    ? "text-stone-300 hover:text-green-300 hover:bg-stone-800"
+                    : "text-gray-700 hover:text-green-700 hover:bg-white hover:shadow-md"
               }`}
             >
               <span className="text-base sm:text-lg flex-shrink-0">
