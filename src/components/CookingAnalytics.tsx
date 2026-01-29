@@ -77,109 +77,26 @@ interface CookingAnalyticsProps {
 }
 
 const CookingAnalytics: React.FC<CookingAnalyticsProps> = ({ darkMode }) => {
-  const { currentUser, isDemoUser } = useAuth();
+  const { currentUser, } = useAuth();
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [timeRange, setTimeRange] = useState<string>("month");
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Sample analytics data
-  const getDemoAnalytics = (): AnalyticsData => ({
-    totalRecipes: 47,
-    totalCookingTime: 2840, // minutes
-    averageRating: 4.3,
-    favoriteCuisines: [
-      { cuisine: "Italian", count: 12, percentage: 25.5 },
-      { cuisine: "Mediterranean", count: 8, percentage: 17.0 },
-      { cuisine: "Asian", count: 7, percentage: 14.9 },
-      { cuisine: "American", count: 6, percentage: 12.8 },
-      { cuisine: "Mexican", count: 5, percentage: 10.6 },
-      { cuisine: "Indian", count: 4, percentage: 8.5 },
-      { cuisine: "Other", count: 5, percentage: 10.6 },
-    ],
-    difficultyBreakdown: [
-      { difficulty: "Easy", count: 20, percentage: 42.6 },
-      { difficulty: "Medium", count: 18, percentage: 38.3 },
-      { difficulty: "Hard", count: 9, percentage: 19.1 },
-    ],
-    cookingTimeBreakdown: [
-      { range: "0-30 min", count: 15, percentage: 31.9 },
-      { range: "30-60 min", count: 18, percentage: 38.3 },
-      { range: "60-90 min", count: 10, percentage: 21.3 },
-      { range: "90+ min", count: 4, percentage: 8.5 },
-    ],
-    weeklyProgress: [
-      { week: "Week 1", recipes: 8, time: 420 },
-      { week: "Week 2", recipes: 6, time: 380 },
-      { week: "Week 3", recipes: 9, time: 520 },
-      { week: "Week 4", recipes: 7, time: 450 },
-    ],
-    monthlyTrends: [
-      { month: "Jan", recipes: 25, time: 1500 },
-      { month: "Feb", recipes: 22, time: 1340 },
-      { month: "Mar", recipes: 28, time: 1680 },
-      { month: "Apr", recipes: 30, time: 1820 },
-    ],
-    topIngredients: [
-      { ingredient: "Chicken", count: 15, percentage: 31.9 },
-      { ingredient: "Rice", count: 12, percentage: 25.5 },
-      { ingredient: "Tomatoes", count: 10, percentage: 21.3 },
-      { ingredient: "Onions", count: 9, percentage: 19.1 },
-      { ingredient: "Garlic", count: 8, percentage: 17.0 },
-    ],
-    cookingGoals: {
-      weeklyRecipes: 8,
-      weeklyTime: 480,
-      monthlyVariety: 15,
-      currentWeekRecipes: 6,
-      currentWeekTime: 380,
-      currentMonthVariety: 12,
-    },
-    achievements: [
-      {
-        name: "First Recipe",
-        description: "Cooked your first recipe",
-        earned: "2024-01-15",
-        icon: "🥘",
-      },
-      {
-        name: "Week Warrior",
-        description: "Cooked 7 days in a row",
-        earned: "2024-02-10",
-        icon: "🔥",
-      },
-      {
-        name: "Cuisine Explorer",
-        description: "Tried 5 different cuisines",
-        earned: "2024-03-05",
-        icon: "🌍",
-      },
-      {
-        name: "Time Master",
-        description: "Spent 10 hours cooking",
-        earned: "2024-03-20",
-        icon: "⏰",
-      },
-    ],
-  });
+  
 
   const loadAnalytics = useCallback(() => {
     setLoading(true);
     try {
-      if (isDemoUser) {
-        setAnalytics(getDemoAnalytics());
-      } else {
-        // Load from localStorage
-        const savedAnalytics = JSON.parse(
-          localStorage.getItem(`analytics_${currentUser?.uid}`) || "null",
-        );
-        setAnalytics(savedAnalytics);
-      }
+      const savedAnalytics = JSON.parse(
+        localStorage.getItem(`analytics_${currentUser?.uid}`) || "null",
+      );
+      setAnalytics(savedAnalytics);
     } catch (error) {
       console.error("Error loading analytics:", error);
       setAnalytics(null);
     }
     setLoading(false);
-  }, [currentUser, isDemoUser]);
+  }, [currentUser]);
 
   useEffect(() => {
     if (currentUser) {

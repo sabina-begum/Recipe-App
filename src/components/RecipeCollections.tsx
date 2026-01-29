@@ -10,8 +10,7 @@
  *
  * Educational use only - Commercial use prohibited.
  */
-
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useAuth } from "../contexts/useAuth";
 import CollectionCard from "./RecipeCollections/CollectionCard";
 import CollectionDetails from "./RecipeCollections/CollectionDetails";
@@ -57,7 +56,7 @@ const RecipeCollections: React.FC<RecipeCollectionsProps> = ({ darkMode }) => {
     useState<Collection | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showAddRecipeModal, setShowAddRecipeModal] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading] = useState(true);
   const [newCollection, setNewCollection] = useState<NewCollection>({
     name: "",
     description: "",
@@ -83,86 +82,8 @@ const RecipeCollections: React.FC<RecipeCollectionsProps> = ({ darkMode }) => {
     "Budget-Friendly",
   ];
 
-  // Sample collections for demo mode
-  const sampleCollections: Collection[] = useMemo(
-    () => [
-      {
-        id: "demo-1",
-        name: "Quick Weeknight Dinners",
-        description: "Fast and delicious meals for busy weeknights",
-        category: "Weeknight Dinners",
-        recipeCount: 8,
-        recipes: [
-          { id: "1", name: "Spaghetti Carbonara", category: "Italian" },
-          { id: "2", name: "Chicken Stir Fry", category: "Asian" },
-          { id: "3", name: "Taco Tuesday", category: "Mexican" },
-        ],
-        lastUpdated: Date.now() - 86400000, // 1 day ago
-      },
-      {
-        id: "demo-2",
-        name: "Sunday Brunch Favorites",
-        description: "Perfect recipes for lazy Sunday mornings",
-        category: "Weekend Brunch",
-        recipeCount: 5,
-        recipes: [
-          { id: "4", name: "Eggs Benedict", category: "Breakfast" },
-          { id: "5", name: "French Toast", category: "Breakfast" },
-          { id: "6", name: "Avocado Toast", category: "Healthy" },
-        ],
-        lastUpdated: Date.now() - 172800000, // 2 days ago
-      },
-      {
-        id: "demo-3",
-        name: "Holiday Feast",
-        description: "Special recipes for holiday celebrations",
-        category: "Holiday Meals",
-        recipeCount: 12,
-        recipes: [
-          { id: "7", name: "Roast Turkey", category: "Main Course" },
-          { id: "8", name: "Mashed Potatoes", category: "Side Dish" },
-          { id: "9", name: "Pumpkin Pie", category: "Dessert" },
-        ],
-        lastUpdated: Date.now() - 259200000, // 3 days ago
-      },
-    ],
-    []
-  );
-
-  const loadCollections = useCallback(async () => {
-    setLoading(true);
-    try {
-      if (isDemoUser) {
-        // Load demo collections from localStorage
-        const demoCollections =
-          (currentUser?.demoData as { collections?: Collection[] })
-            ?.collections || sampleCollections;
-        setCollections(
-          demoCollections.sort(
-            (a: Collection, b: Collection) => b.lastUpdated - a.lastUpdated
-          )
-        );
-      } else if (currentUser) {
-        // Load user collections from localStorage
-        const userCollections = JSON.parse(
-          localStorage.getItem(`collections_${currentUser.uid}`) || "[]"
-        );
-        setCollections(
-          userCollections.sort(
-            (a: Collection, b: Collection) => b.lastUpdated - a.lastUpdated
-          )
-        );
-      } else {
-        // Show sample collections for non-logged in users
-        setCollections(sampleCollections);
-      }
-    } catch (error) {
-      console.error("Error loading collections:", error);
-      setCollections(sampleCollections);
-    }
-    setLoading(false);
-  }, [currentUser, isDemoUser, sampleCollections]);
-
+ 
+  
   const loadAvailableRecipes = useCallback(async () => {
     try {
       if (isDemoUser) {
@@ -226,9 +147,10 @@ const RecipeCollections: React.FC<RecipeCollectionsProps> = ({ darkMode }) => {
   }, [currentUser, isDemoUser]);
 
   useEffect(() => {
-    loadCollections();
-    loadAvailableRecipes();
-  }, [currentUser, loadCollections, loadAvailableRecipes]);
+    if (currentUser || isDemoUser) {
+      loadAvailableRecipes();
+    }
+  }, [currentUser, isDemoUser, loadAvailableRecipes]);
 
   const createCollection = async () => {
     if (!newCollection.name.trim()) return;

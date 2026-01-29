@@ -54,83 +54,13 @@ const LeftoverIntegration: React.FC<LeftoverIntegrationProps> = ({
     return ingredients;
   }, [recipe]);
 
-  // Sample leftover recipe suggestions
-  const getLeftoverSuggestions = (
-    ingredients: string[],
-  ): LeftoverRecipeSuggestion[] => {
-    const suggestions: LeftoverRecipeSuggestion[] = [
-      {
-        id: 1,
-        name: "Leftover Chicken Stir Fry",
-        description:
-          "Transform leftover chicken into a quick and delicious stir fry",
-        ingredients: ["chicken", "vegetables", "soy sauce"],
-        difficulty: "Easy",
-        time: "15 min",
-        image: "/src/assets/foodie-logo-simple.svg",
-        category: "Main Course",
-      },
-      {
-        id: 2,
-        name: "Rice Pudding",
-        description: "Sweet and creamy dessert using leftover rice",
-        ingredients: ["rice", "milk", "sugar", "cinnamon"],
-        difficulty: "Easy",
-        time: "20 min",
-        image: "/src/assets/foodie-logo-simple.svg",
-        category: "Dessert",
-      },
-      {
-        id: 3,
-        name: "Vegetable Soup",
-        description: "Hearty soup using leftover vegetables",
-        ingredients: ["vegetables", "broth", "herbs"],
-        difficulty: "Easy",
-        time: "25 min",
-        image: "/src/assets/foodie-logo-simple.svg",
-        category: "Soup",
-      },
-      {
-        id: 4,
-        name: "Pasta Frittata",
-        description: "Italian-style omelette with leftover pasta",
-        ingredients: ["pasta", "eggs", "cheese", "vegetables"],
-        difficulty: "Medium",
-        time: "20 min",
-        image: "/src/assets/foodie-logo-simple.svg",
-        category: "Breakfast",
-      },
-      {
-        id: 5,
-        name: "Bread Pudding",
-        description: "Classic dessert using stale bread",
-        ingredients: ["bread", "milk", "eggs", "sugar"],
-        difficulty: "Easy",
-        time: "45 min",
-        image: "/src/assets/foodie-logo-simple.svg",
-        category: "Dessert",
-      },
-      {
-        id: 6,
-        name: "Potato Hash",
-        description: "Breakfast hash with leftover potatoes",
-        ingredients: ["potato", "onion", "bell pepper", "eggs"],
-        difficulty: "Easy",
-        time: "15 min",
-        image: "/src/assets/foodie-logo-simple.svg",
-        category: "Breakfast",
-      },
-    ];
-    // Filter suggestions based on available ingredients
-    return suggestions.filter((suggestion) => {
-      const matchingIngredients = suggestion.ingredients.filter((ingredient) =>
-        ingredients.some(
-          (ing) => ing.includes(ingredient) || ingredient.includes(ing),
-        ),
-      );
-      return matchingIngredients.length >= 1; // At least one ingredient match
-    });
-  };
+  const getLeftoverSuggestions = useCallback(
+    (ingredients: string[]): LeftoverRecipeSuggestion[] => {
+      void ingredients; // reserved for real suggestions later
+      return [];
+    },
+    [],
+  );
 
   useEffect(() => {
     if (recipe) {
@@ -337,4 +267,3 @@ const LeftoverIntegration: React.FC<LeftoverIntegrationProps> = ({
 };
 
 export default LeftoverIntegration;
-

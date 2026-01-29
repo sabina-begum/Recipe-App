@@ -11,7 +11,7 @@
  * Educational use only - Commercial use prohibited.
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useAuth } from "../contexts/useAuth";
 import {
   TrendingUp,
@@ -104,138 +104,33 @@ const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({ darkMode }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [timeRange, setTimeRange] = useState<string>("30d");
 
-  // Generate mock analytics data
-  const generateMockAnalytics = useCallback(() => {
-    return {
-      cookingStats: {
-        totalRecipesCooked: 47,
-        totalCookingTime: 89.5,
-        averageRating: 4.2,
-        favoriteCuisine: "Italian",
-        mostCookedRecipe: "Spaghetti Carbonara",
-        weeklyGoal: 3,
-        weeklyProgress: 2,
-        monthlyTrend: "+15%",
-        cookingStreak: 12,
-      },
-      userBehavior: {
-        searchPatterns: [
-          { query: "pasta", count: 15 },
-          { query: "chicken", count: 12 },
-          { query: "dessert", count: 8 },
-          { query: "vegetarian", count: 6 },
-          { query: "quick meals", count: 10 },
-        ],
-        peakCookingTimes: [
-          { hour: 18, count: 25 },
-          { hour: 19, count: 20 },
-          { hour: 20, count: 15 },
-          { hour: 12, count: 10 },
-          { hour: 13, count: 8 },
-        ],
-        deviceUsage: {
-          mobile: 65,
-          desktop: 30,
-          tablet: 5,
-        },
-        sessionDuration: 8.5,
-        bounceRate: 0.15,
-      },
-      preferences: {
-        dietaryRestrictions: ["Vegetarian", "Gluten-Free"],
-        spiceLevel: "Medium",
-        cookingSkill: "Intermediate",
-        preferredCuisines: ["Italian", "Mexican", "Asian"],
-        mealTypes: ["Dinner", "Lunch", "Breakfast"],
-        timeConstraints: "30-60 minutes",
-      },
-      achievements: [
-        {
-          id: 1,
-          name: "First Recipe",
-          description: "Cooked your first recipe",
-          earned: true,
-          date: "2024-01-15",
-        },
-        {
-          id: 2,
-          name: "Week Warrior",
-          description: "Cooked 7 days in a row",
-          earned: true,
-          date: "2024-01-22",
-        },
-        {
-          id: 3,
-          name: "Cuisine Explorer",
-          description: "Tried 5 different cuisines",
-          earned: true,
-          date: "2024-02-01",
-        },
-        {
-          id: 4,
-          name: "Master Chef",
-          description: "Cooked 50 recipes",
-          earned: false,
-          progress: 47,
-        },
-        {
-          id: 5,
-          name: "Social Butterfly",
-          description: "Shared 10 recipes",
-          earned: false,
-          progress: 3,
-        },
-      ],
-      recommendations: [
-        {
-          type: "recipe",
-          title: "Try Risotto ai Funghi",
-          reason: "Based on your love for Italian cuisine",
-          confidence: 0.92,
-        },
-        {
-          type: "skill",
-          title: "Master Knife Skills",
-          reason: "Improve your cooking efficiency",
-          confidence: 0.88,
-        },
-        {
-          type: "cuisine",
-          title: "Explore Thai Cuisine",
-          reason: "Similar to your preferred flavors",
-          confidence: 0.85,
-        },
-      ],
-    };
-  }, []);
+  
 
   const loadAnalytics = useCallback(async () => {
     setLoading(true);
     try {
-      // Load from localStorage (simulated database)
-      const userData = JSON.parse(
-        localStorage.getItem(`analytics_${currentUser?.uid}`) || "{}"
+      const stored = JSON.parse(
+        localStorage.getItem(`analytics_${currentUser?.uid}`) || "null",
       );
-
-      // Generate mock data if none exists
-      const mockData = generateMockAnalytics();
-      const analyticsData =
-        Object.keys(userData).length > 0 ? userData : mockData;
-
-      setAnalytics(analyticsData);
+  
+      if (stored) {
+        setAnalytics(stored);
+      } else {
+        setAnalytics({} as AnalyticsData);
+      }
     } catch (error) {
       console.error("Error loading analytics:", error);
+      setAnalytics({} as AnalyticsData);
     } finally {
       setLoading(false);
     }
-  }, [currentUser, generateMockAnalytics]);
+  }, [currentUser]);
 
-  // Load analytics data
   useEffect(() => {
     if (currentUser) {
       loadAnalytics();
     }
-  }, [currentUser, timeRange, loadAnalytics]);
+  }, [currentUser, loadAnalytics]);
 
   // Track user interaction (for future use) - currently unused
   // const trackInteraction = useCallback(
