@@ -13,6 +13,10 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../contexts/useAuth";
+import {
+  computeCookingAnalytics,
+  type AnalyticsData,
+} from "../utils/cookingAnalyticsUtils";
 
 interface CuisineStat {
   cuisine: string;
@@ -24,18 +28,8 @@ interface DifficultyStat {
   count: number;
   percentage: number;
 }
-interface TimeBreakdown {
-  range: string;
-  count: number;
-  percentage: number;
-}
 interface WeeklyProgress {
   week: string;
-  recipes: number;
-  time: number;
-}
-interface MonthlyTrend {
-  month: string;
   recipes: number;
   time: number;
 }
@@ -44,59 +38,34 @@ interface IngredientStat {
   count: number;
   percentage: number;
 }
-interface CookingGoals {
-  weeklyRecipes: number;
-  weeklyTime: number;
-  monthlyVariety: number;
-  currentWeekRecipes: number;
-  currentWeekTime: number;
-  currentMonthVariety: number;
-}
 interface Achievement {
   name: string;
   description: string;
   earned: string;
   icon: string;
 }
-interface AnalyticsData {
-  totalRecipes: number;
-  totalCookingTime: number;
-  averageRating: number;
-  favoriteCuisines: CuisineStat[];
-  difficultyBreakdown: DifficultyStat[];
-  cookingTimeBreakdown: TimeBreakdown[];
-  weeklyProgress: WeeklyProgress[];
-  monthlyTrends: MonthlyTrend[];
-  topIngredients: IngredientStat[];
-  cookingGoals: CookingGoals;
-  achievements: Achievement[];
-  [key: string]: unknown;
-}
 interface CookingAnalyticsProps {
   darkMode: boolean;
 }
 
 const CookingAnalytics: React.FC<CookingAnalyticsProps> = ({ darkMode }) => {
-  const { currentUser, } = useAuth();
+  const { currentUser, isDemoUser } = useAuth();
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [timeRange, setTimeRange] = useState<string>("month");
   const [loading, setLoading] = useState<boolean>(true);
 
-  
-
   const loadAnalytics = useCallback(() => {
+    if (!currentUser) return;
     setLoading(true);
     try {
-      const savedAnalytics = JSON.parse(
-        localStorage.getItem(`analytics_${currentUser?.uid}`) || "null",
-      );
-      setAnalytics(savedAnalytics);
+      const computed = computeCookingAnalytics(currentUser.uid, !!isDemoUser);
+      setAnalytics(computed);
     } catch (error) {
-      console.error("Error loading analytics:", error);
+      console.error("Error computing analytics:", error);
       setAnalytics(null);
     }
     setLoading(false);
-  }, [currentUser]);
+  }, [currentUser, isDemoUser]);
 
   useEffect(() => {
     if (currentUser) {
@@ -159,10 +128,12 @@ const CookingAnalytics: React.FC<CookingAnalyticsProps> = ({ darkMode }) => {
           darkMode ? "text-gray-300" : "text-gray-600"
         }`}
       >
-        No analytics data available.
+        Unable to load analytics. Please try again.
       </div>
     );
   }
+
+  const hasNoData = analytics.totalRecipes === 0;
 
   return (
     <div
@@ -250,7 +221,7 @@ const CookingAnalytics: React.FC<CookingAnalyticsProps> = ({ darkMode }) => {
         </div>
 
         {/* Cooking Goals Progress */}
-        {analytics.cookingGoals && (
+        {analytics.cookingGoals && !hasNoData && (
           <div className="mb-6">
             <h4 className="font-medium mb-3">Cooking Goals Progress</h4>
             <div className="space-y-3">
@@ -498,30 +469,39 @@ const CookingAnalytics: React.FC<CookingAnalyticsProps> = ({ darkMode }) => {
           <h4 className="font-medium mb-2 text-slate-800 dark:text-slate-200">
             Cooking Insights:
           </h4>
-          <ul className="text-sm text-slate-700 dark:text-slate-300 space-y-1">
-            <li>
-              • Your favorite cuisine is{" "}
-              {analytics.favoriteCuisines?.[0]?.cuisine || "Italian"}
-            </li>
-            <li>
-              • You prefer{" "}
-              {analytics.difficultyBreakdown?.[0]?.difficulty || "Easy"} recipes
-            </li>
-            <li>
-              • Average cooking time:{" "}
-              {formatTime(
-                Math.round(
-                  (analytics.totalCookingTime || 0) /
-                    (analytics.totalRecipes || 1),
-                ),
-              )}
-            </li>
-            <li>
-              • You&apos;ve earned {analytics.achievements?.length || 0}{" "}
-              achievements
-            </li>
-            <li>• Don&apos;t forget to log your meals for better analytics</li>
-          </ul>
+          {hasNoData ? (
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Your analytics are based on recipes in your favorites and
+              collections. Add recipes from the Recipes page or browse featured
+              recipes on the home page, then save them to see your stats and
+              achievements here.
+            </p>
+          ) : (
+            <ul className="text-sm text-slate-700 dark:text-slate-300 space-y-1">
+              <li>
+                • Your favorite cuisine is{" "}
+                {analytics.favoriteCuisines?.[0]?.cuisine ?? "—"}
+              </li>
+              <li>
+                • You prefer{" "}
+                {analytics.difficultyBreakdown?.[0]?.difficulty ?? "—"} recipes
+              </li>
+              <li>
+                • Average cooking time:{" "}
+                {formatTime(
+                  Math.round(
+                    (analytics.totalCookingTime || 0) /
+                      (analytics.totalRecipes || 1),
+                  ),
+                )}
+              </li>
+              <li>
+                • You&apos;ve earned {analytics.achievements?.length ?? 0}{" "}
+                achievements
+              </li>
+              <li>• Keep adding recipes to unlock more achievements</li>
+            </ul>
+          )}
         </div>
       </div>
     </div>
@@ -529,4 +509,3 @@ const CookingAnalytics: React.FC<CookingAnalyticsProps> = ({ darkMode }) => {
 };
 
 export default CookingAnalytics;
-
