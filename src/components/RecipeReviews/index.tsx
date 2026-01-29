@@ -58,7 +58,7 @@ const RecipeReviews = ({
   const [showReviewForm, setShowReviewForm] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Load reviews from localStorage (simulated database)
+  // Load reviews from localStorage
   useEffect(() => {
     const savedReviews: Review[] = JSON.parse(
       localStorage.getItem(`reviews_${recipeId}`) || "[]",
