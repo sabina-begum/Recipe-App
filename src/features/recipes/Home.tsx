@@ -35,84 +35,11 @@ import RecipeMetaHelmet from "../../components/RecipeMetaHelmet";
 const heroImages = featuredRecipes.slice(0, 3);
 
 // Word arrays for food description generation
-const FOOD_WORDS = [
-  "delicious",
-  "mouthwatering",
-  "flavorful",
-  "tasty",
-  "scrumptious",
-  "delectable",
-  "savory",
-  "aromatic",
-  "fresh",
-  "homemade",
-  "traditional",
-  "authentic",
-  "gourmet",
-  "premium",
-  "handcrafted",
-  "artisanal",
-  "seasonal",
-  "organic",
-];
-const COOKING_WORDS = [
-  "cooked",
-  "prepared",
-  "crafted",
-  "made",
-  "created",
-  "assembled",
-  "slow-cooked",
-  "grilled",
-  "baked",
-  "roasted",
-  "steamed",
-  "fried",
-  "braised",
-  "poached",
-  "smoked",
-  "cured",
-  "fermented",
-  "pickled",
-];
-const INGREDIENT_WORDS = [
-  "fresh ingredients",
-  "quality produce",
-  "premium spices",
-  "herbs and seasonings",
-  "locally sourced ingredients",
-  "organic vegetables",
-  "hand-selected spices",
-  "farm-fresh produce",
-  "artisanal ingredients",
-  "traditional spices",
-];
-const EXPERIENCE_WORDS = [
-  "culinary experience",
-  "dining delight",
-  "gastronomic journey",
-  "flavor adventure",
-  "taste sensation",
-  "foodie paradise",
-  "culinary masterpiece",
-  "dining excellence",
-];
-
-function generateFoodDescription(recipeName: string | undefined): string {
+/** Fallback description when recipe has no description or instructions (deterministic, no random placeholder text). */
+function getFallbackDescription(recipeName: string | undefined): string {
   if (!recipeName) return "";
-  const randomFood = FOOD_WORDS[Math.floor(Math.random() * FOOD_WORDS.length)];
-  const randomCooking =
-    COOKING_WORDS[Math.floor(Math.random() * COOKING_WORDS.length)];
-  const randomIngredient =
-    INGREDIENT_WORDS[Math.floor(Math.random() * INGREDIENT_WORDS.length)];
-  const randomExperience =
-    EXPERIENCE_WORDS[Math.floor(Math.random() * EXPERIENCE_WORDS.length)];
-  const descriptions = [
-    `A ${randomFood} ${recipeName.toLowerCase()} that will transport your taste buds to culinary heaven. ${randomCooking} with ${randomIngredient}, this dish offers a truly ${randomExperience}.`,
-    `Experience the perfect blend of flavors in this ${randomFood} ${recipeName.toLowerCase()}. Carefully ${randomCooking} using ${randomIngredient}, it's a ${randomExperience} that will impress even the most discerning palates.`,
-    `This ${randomFood} ${recipeName.toLowerCase()} is a testament to culinary excellence. ${randomCooking} with precision and ${randomIngredient}, it delivers a ${randomExperience} that's both comforting and sophisticated.`,
-  ];
-  return descriptions[Math.floor(Math.random() * descriptions.length)];
+  const name = recipeName.trim();
+  return name ? `A delicious ${name} recipe.` : "";
 }
 
 // Define prop types for HomePage
@@ -144,7 +71,7 @@ export default function HomePage({
   );
   const [toolsExpanded, setToolsExpanded] = useState(false);
 
-  // Use real recipe description when available; otherwise fall back to generated
+  // Use real recipe description when available; otherwise fall back to recipe-name-based description
   const memoizedDescription = useMemo(() => {
     if (!selected) return "";
     const s = selected as {
@@ -158,7 +85,7 @@ export default function HomePage({
       const text = s.strInstructions.trim();
       return text.length <= max ? text : `${text.slice(0, max).trim()}…`;
     }
-    return generateFoodDescription(s.strMeal);
+    return getFallbackDescription(s.strMeal);
   }, [selected]);
   const handleToolsToggle = useCallback(
     () => setToolsExpanded((prev) => !prev),
