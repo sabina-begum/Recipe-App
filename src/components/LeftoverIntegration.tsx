@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import OptimizedImage from "./ui/OptimizedImage";
+import { featuredRecipes } from "../data/recipes";
 
 export interface LeftoverRecipeSuggestion {
   id: number;
@@ -56,8 +57,31 @@ const LeftoverIntegration: React.FC<LeftoverIntegrationProps> = ({
 
   const getLeftoverSuggestions = useCallback(
     (ingredients: string[]): LeftoverRecipeSuggestion[] => {
-      void ingredients; // reserved for real suggestions later
-      return [];
+      if (!ingredients.length) return [];
+      const normalized = ingredients.map((i) => i.toLowerCase().trim());
+      return featuredRecipes
+        .filter((r) => {
+          const recipeIngreds = (r.ingredients || []).map((i) =>
+            i.toLowerCase().trim(),
+          );
+          const hasOverlap = normalized.some(
+            (curr) =>
+              recipeIngreds.some(
+                (ri) => ri.includes(curr) || curr.includes(ri),
+              ),
+          );
+          return hasOverlap;
+        })
+        .map((r, index) => ({
+          id: index + 1,
+          name: r.name,
+          description: r.description,
+          ingredients: r.ingredients || [],
+          difficulty: r.difficulty || "Easy",
+          time: r.time || "—",
+          image: r.image,
+          category: r.category || "Other",
+        }));
     },
     [],
   );
