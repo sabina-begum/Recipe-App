@@ -31,15 +31,8 @@ import RecipeCard from "./RecipeCard";
 import QuickAccessSection from "../../components/home/QuickAccessSection";
 import { useFavorites } from "../../hooks/useFavorites";
 import RecipeMetaHelmet from "../../components/RecipeMetaHelmet";
-// Example royalty-free food images (Unsplash)
-const foodImages = [
-  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80", // pasta
-  "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=800&q=80", // salad
-  "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80", // steak
-];
-
-// Featured recipes images (separate from main food images)
-
+// Hero images from featured recipes (real data)
+const heroImages = featuredRecipes.slice(0, 3);
 
 // Word arrays for food description generation
 const FOOD_WORDS = [
@@ -147,17 +140,17 @@ export default function HomePage({
   const { isFavorite, favoriteLoading, toggleFavorite } = useFavorites(
     currentUser,
     selected,
-    isDemoUser
+    isDemoUser,
   );
   const [toolsExpanded, setToolsExpanded] = useState(false);
 
   const memoizedDescription = useMemo(
     () => generateFoodDescription(selected?.strMeal),
-    [selected?.strMeal]
+    [selected?.strMeal],
   );
   const handleToolsToggle = useCallback(
     () => setToolsExpanded((prev) => !prev),
-    []
+    [],
   );
 
   if (!selected) {
@@ -174,7 +167,8 @@ export default function HomePage({
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 text-center md:text-left max-w-xl">
               Unlock exclusive, chef-curated dishes and gourmet inspiration.
-              Experience the art of fine cooking—crafted for discerning food lovers.
+              Experience the art of fine cooking—crafted for discerning food
+              lovers.
             </p>
             <a
               href="#featured"
@@ -209,31 +203,43 @@ export default function HomePage({
           <div className="flex-1 flex items-center justify-center w-full h-full py-8 md:py-0">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-1 w-full max-w-lg">
               <div className="grid grid-cols-2 gap-4">
-                <img
-                  src={foodImages[0]}
-                  alt="Premium Pasta Dish"
-                  className="rounded-2xl shadow-md object-cover w-full h-40 md:h-56 lg:h-64 border border-border"
-                  style={{ background: "#fffbe6" }}
-                  loading="lazy"
-                  onError={() => console.log("Failed to load:", foodImages[0])}
-                />
-                <img
-                  src={foodImages[1]}
-                  alt="Fresh Salad"
-                  className="rounded-2xl shadow-md object-cover w-full h-40 md:h-56 lg:h-64 border border-border"
-                  style={{ background: "#ffe5d9" }}
-                  loading="lazy"
-                  onError={() => console.log("Failed to load:", foodImages[1])}
-                />
+                {heroImages[0] && (
+                  <img
+                    src={heroImages[0].image}
+                    alt={heroImages[0].name}
+                    className="rounded-2xl shadow-md object-cover w-full h-40 md:h-56 lg:h-64 border border-border"
+                    style={{ background: "#fffbe6" }}
+                    loading="lazy"
+                    onError={() =>
+                      console.log("Failed to load:", heroImages[0]?.image)
+                    }
+                  />
+                )}
+                {heroImages[1] && (
+                  <img
+                    src={heroImages[1].image}
+                    alt={heroImages[1].name}
+                    className="rounded-2xl shadow-md object-cover w-full h-40 md:h-56 lg:h-64 border border-border"
+                    style={{ background: "#ffe5d9" }}
+                    loading="lazy"
+                    onError={() =>
+                      console.log("Failed to load:", heroImages[1]?.image)
+                    }
+                  />
+                )}
               </div>
-              <img
-                src={foodImages[2]}
-                alt="Gourmet Steak"
-                className="rounded-2xl shadow-md object-cover w-full h-40 md:h-56 lg:h-64 border border-border mt-4"
-                style={{ background: "#f8f8f8" }}
-                loading="lazy"
-                onError={() => console.log("Failed to load:", foodImages[2])}
-              />
+              {heroImages[2] && (
+                <img
+                  src={heroImages[2].image}
+                  alt={heroImages[2].name}
+                  className="rounded-2xl shadow-md object-cover w-full h-40 md:h-56 lg:h-64 border border-border mt-4"
+                  style={{ background: "#f8f8f8" }}
+                  loading="lazy"
+                  onError={() =>
+                    console.log("Failed to load:", heroImages[2]?.image)
+                  }
+                />
+              )}
             </div>
           </div>
         </div>
