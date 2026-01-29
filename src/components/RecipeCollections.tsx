@@ -126,7 +126,7 @@ const RecipeCollections: React.FC<RecipeCollectionsProps> = ({ darkMode }) => {
             name: r.name,
             category: r.category || "Other",
             source: "featured",
-          }))
+          })),
         );
       }
     } catch (error) {
