@@ -102,18 +102,17 @@ export default function HomePage({
           {/* Left: Hero Text & CTA */}
           <div className="flex-1 flex flex-col items-center md:items-start justify-center py-12 md:py-0 px-4 md:px-0 max-w-2xl">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 text-neutral-900 dark:text-neutral-100 tracking-tight text-center md:text-left">
-              Premium Recipes for Culinary Excellence
+              Discover Recipes to Try at Home
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 text-center md:text-left max-w-xl">
-              Unlock exclusive, chef-curated dishes and gourmet inspiration.
-              Experience the art of fine cooking—crafted for discerning food
-              lovers.
+              Browse featured recipes, save favorites, plan meals, and build
+              shopping lists—all in one place.
             </p>
             <a
               href="#featured"
               className="inline-block px-8 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold text-lg hover:bg-green-700 transition-colors mb-8 md:mb-0"
             >
-              Explore Featured Recipe
+              Explore Featured Recipes
             </a>
             <div className="mt-10 border-t pt-8 w-full bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
               <h2 className="text-2xl font-bold mb-2 text-green-700 dark:text-green-300">
