@@ -1,17 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import favicon from "../assets/favicon.svg";
+
+const NEWSLETTER_STORAGE_KEY = "culinaria_newsletter_subscribed";
+const NEWSLETTER_EMAIL_KEY = "culinaria_newsletter_email";
 
 function Footer() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
+  // Load persisted newsletter state from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(NEWSLETTER_STORAGE_KEY);
+      const storedEmail = localStorage.getItem(NEWSLETTER_EMAIL_KEY);
+      if (stored === "true") {
+        setSubmitted(true);
+        if (storedEmail) setEmail(storedEmail);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const handleNewsletterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Simulate newsletter signup (replace with real logic as needed)
+    const value = email.trim();
+    if (!value) return;
     setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 4000);
-    setEmail("");
+    try {
+      localStorage.setItem(NEWSLETTER_STORAGE_KEY, "true");
+      localStorage.setItem(NEWSLETTER_EMAIL_KEY, value);
+    } catch {
+      // ignore quota
+    }
   };
 
   return (
