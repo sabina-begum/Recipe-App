@@ -104,34 +104,26 @@ const SmartNotifications = ({ darkMode }: { darkMode: boolean }) => {
 
   const markAsRead = (notificationId: number) => {
     if (!currentUser) return;
-    setNotifications((prev: Notification[]) =>
-      prev.map((notification: Notification) =>
-        notification.id === notificationId
-          ? { ...notification, read: true }
-          : notification,
-      ),
+    const updated = notifications.map((n: Notification) =>
+      n.id === notificationId ? { ...n, read: true } : n,
     );
-
+    setNotifications(updated);
     if (!isDemoUser) {
       localStorage.setItem(
         `notifications_${currentUser.uid}`,
-        JSON.stringify(notifications),
+        JSON.stringify(updated),
       );
     }
   };
 
   const deleteNotification = (notificationId: number) => {
     if (!currentUser) return;
-    setNotifications((prev: Notification[]) =>
-      prev.filter(
-        (notification: Notification) => notification.id !== notificationId,
-      ),
-    );
-
+    const updated = notifications.filter((n: Notification) => n.id !== notificationId);
+    setNotifications(updated);
     if (!isDemoUser) {
       localStorage.setItem(
         `notifications_${currentUser.uid}`,
-        JSON.stringify(notifications),
+        JSON.stringify(updated),
       );
     }
   };

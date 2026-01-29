@@ -12,6 +12,7 @@
  */
 import React, { useState, useCallback, useEffect } from "react";
 import { useAuth } from "../contexts/useAuth";
+import { addNotification } from "../utils/notificationUtils";
 import CollectionCard from "./RecipeCollections/CollectionCard";
 import CollectionDetails from "./RecipeCollections/CollectionDetails";
 import CreateCollectionModal from "./RecipeCollections/CreateCollectionModal";
@@ -222,6 +223,15 @@ const RecipeCollections: React.FC<RecipeCollectionsProps> = ({ darkMode }) => {
       }
 
       setCollections((prev) => [newCollectionWithId, ...prev]);
+      const uid = currentUser?.uid;
+      if (uid) {
+        addNotification(uid, {
+          type: "recipe_suggestion",
+          title: "Collection created",
+          message: `"${newCollectionWithId.name}" was created. Add recipes to get started!`,
+          priority: "low",
+        });
+      }
       setNewCollection({
         name: "",
         description: "",
