@@ -35,7 +35,7 @@ interface ShoppingItem {
 }
 
 const ShoppingListGenerator = ({ darkMode }: ShoppingListGeneratorProps) => {
-  const { currentUser } = useAuth();
+  const { currentUser, isDemoUser } = useAuth();
   const [shoppingList, setShoppingList] = useState<ShoppingItem[]>([]);
   const [newItem, setNewItem] = useState({
     ingredient: "",
@@ -47,6 +47,7 @@ const ShoppingListGenerator = ({ darkMode }: ShoppingListGeneratorProps) => {
   const loadMealPlan = useCallback(async () => {
     if (!currentUser) return;
     try {
+      if (isDemoUser) return; // Meal plan for demo is in demoUser; list already from localStorage
       const currentDate = new Date();
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
@@ -63,7 +64,7 @@ const ShoppingListGenerator = ({ darkMode }: ShoppingListGeneratorProps) => {
     } catch (error) {
       console.error("Error loading meal plan:", error);
     }
-  }, [currentUser]);
+  }, [currentUser, isDemoUser]);
 
   const loadShoppingList = useCallback(() => {
     if (!currentUser) return;

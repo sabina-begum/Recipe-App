@@ -51,7 +51,7 @@ interface UserRecipe {
 const UserRecipeSubmission: React.FC<UserRecipeSubmissionProps> = ({
   darkMode,
 }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, isDemoUser } = useAuth();
   const [recipe, setRecipe] = useState<UserRecipe>({
     name: "",
     category: "",
@@ -130,11 +130,25 @@ const UserRecipeSubmission: React.FC<UserRecipeSubmissionProps> = ({
         userId: currentUser.uid,
         userName: getUserDisplayName(currentUser),
         timestamp: Date.now(),
-        status: "pending", // For moderation
+        status: "pending",
         type: "user-submitted",
       };
 
-      await addDoc(collection(db, "userRecipes"), recipeData);
+      if (isDemoUser) {
+        const key = `userRecipes_${currentUser.uid}`;
+        const existing = JSON.parse(
+          localStorage.getItem(key) || "[]",
+        ) as UserRecipe[];
+        localStorage.setItem(
+          key,
+          JSON.stringify([
+            ...existing,
+            { ...recipeData, id: `demo_${Date.now()}` },
+          ]),
+        );
+      } else {
+        await addDoc(collection(db, "userRecipes"), recipeData);
+      }
       setSuccess(true);
       setRecipe({
         name: "",
@@ -152,8 +166,9 @@ const UserRecipeSubmission: React.FC<UserRecipeSubmissionProps> = ({
       });
     } catch (error) {
       console.error("Error submitting recipe:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   if (!currentUser) {

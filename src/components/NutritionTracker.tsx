@@ -59,7 +59,7 @@ interface NutritionTrackerProps {
 }
 
 const NutritionTracker: React.FC<NutritionTrackerProps> = ({ darkMode }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, isDemoUser } = useAuth();
   const [nutritionGoals, setNutritionGoals] = useState<NutritionGoals>({
     calories: 2000,
     protein: 50,
@@ -103,6 +103,29 @@ const NutritionTracker: React.FC<NutritionTrackerProps> = ({ darkMode }) => {
     if (!currentUser) return;
 
     try {
+      if (isDemoUser) {
+        const key = `nutrition_log_${currentUser.uid}_${selectedDate}`;
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const data = JSON.parse(raw) as {
+            dailyLog?: NutritionGoals;
+            meals?: Meal[];
+          };
+          setDailyLog(
+            data.dailyLog || {
+              calories: 0,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+              fiber: 0,
+              sugar: 0,
+              sodium: 0,
+            },
+          );
+          setMeals(data.meals || []);
+          return;
+        }
+      }
       const logDoc = await getDoc(
         doc(db, "users", currentUser.uid, "nutritionLogs", selectedDate),
       );
@@ -135,12 +158,40 @@ const NutritionTracker: React.FC<NutritionTrackerProps> = ({ darkMode }) => {
     } catch (error) {
       console.error("Error loading daily log:", error);
     }
-  }, [currentUser, selectedDate]);
+  }, [currentUser, isDemoUser, selectedDate]);
 
   const loadUserData = useCallback(async () => {
     if (!currentUser) return;
 
     try {
+      if (isDemoUser) {
+        const key = `user_${currentUser.uid}`;
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const data = JSON.parse(raw) as {
+            nutritionGoals?: NutritionGoals;
+            profile?: {
+              age?: number;
+              weight?: number;
+              height?: number;
+              gender?: string;
+              activityLevel?: string;
+              goal?: string;
+            };
+          };
+          if (data.nutritionGoals) setNutritionGoals(data.nutritionGoals);
+          if (data.profile) {
+            setAge(data.profile.age ?? 30);
+            setWeight(data.profile.weight ?? 70);
+            setHeight(data.profile.height ?? 170);
+            setGender(data.profile.gender ?? "female");
+            setActivityLevel(data.profile.activityLevel ?? "moderate");
+            setGoal(data.profile.goal ?? "maintain");
+          }
+        }
+        loadDailyLog();
+        return;
+      }
       const userDoc = await getDoc(doc(db, "users", currentUser.uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
@@ -160,7 +211,7 @@ const NutritionTracker: React.FC<NutritionTrackerProps> = ({ darkMode }) => {
     } catch (error) {
       console.error("Error loading user data:", error);
     }
-  }, [currentUser, loadDailyLog]);
+  }, [currentUser, isDemoUser, loadDailyLog]);
 
   useEffect(() => {
     if (currentUser) {
@@ -185,7 +236,8 @@ const NutritionTracker: React.FC<NutritionTrackerProps> = ({ darkMode }) => {
       veryActive: 1.9,
     };
 
-    const totalDailyEnergyExpenditure = bmr * activityMultipliers[activityLevel];
+    const totalDailyEnergyExpenditure =
+      bmr * activityMultipliers[activityLevel];
 
     // Goal adjustment
     const goalAdjustments: Record<string, number> = {
@@ -217,6 +269,26 @@ const NutritionTracker: React.FC<NutritionTrackerProps> = ({ darkMode }) => {
     if (!currentUser) return;
 
     try {
+      if (isDemoUser) {
+        const key = `user_${currentUser.uid}`;
+        const existing = JSON.parse(localStorage.getItem(key) || "{}");
+        localStorage.setItem(
+          key,
+          JSON.stringify({
+            ...existing,
+            nutritionGoals: goals,
+            profile: {
+              age,
+              weight,
+              height,
+              gender,
+              activityLevel,
+              goal,
+            },
+          }),
+        );
+        return;
+      }
       await setDoc(
         doc(db, "users", currentUser.uid),
         {
@@ -313,14 +385,18 @@ const NutritionTracker: React.FC<NutritionTrackerProps> = ({ darkMode }) => {
       });
       setShowAddMeal(false);
 
-      // Save to Firestore
-      await setDoc(
-        doc(db, "users", currentUser.uid, "nutritionLogs", selectedDate),
-        {
-          dailyLog: updatedDailyLog,
-          meals: updatedMeals,
-        },
-      );
+      if (isDemoUser) {
+        const key = `nutrition_log_${currentUser.uid}_${selectedDate}`;
+        localStorage.setItem(
+          key,
+          JSON.stringify({ dailyLog: updatedDailyLog, meals: updatedMeals }),
+        );
+      } else {
+        await setDoc(
+          doc(db, "users", currentUser.uid, "nutritionLogs", selectedDate),
+          { dailyLog: updatedDailyLog, meals: updatedMeals },
+        );
+      }
     } catch (error) {
       console.error("Error adding meal:", error);
     } finally {
@@ -348,14 +424,22 @@ const NutritionTracker: React.FC<NutritionTrackerProps> = ({ darkMode }) => {
     setMeals(updatedMeals);
     setDailyLog(updatedDailyLog);
 
-    // Save to Firestore
-    await setDoc(
-      doc(db, "users", currentUser.uid, "nutritionLogs", selectedDate),
-      {
-        dailyLog: updatedDailyLog,
-        meals: updatedMeals,
-      },
-    );
+    try {
+      if (isDemoUser) {
+        const key = `nutrition_log_${currentUser.uid}_${selectedDate}`;
+        localStorage.setItem(
+          key,
+          JSON.stringify({ dailyLog: updatedDailyLog, meals: updatedMeals }),
+        );
+      } else {
+        await setDoc(
+          doc(db, "users", currentUser.uid, "nutritionLogs", selectedDate),
+          { dailyLog: updatedDailyLog, meals: updatedMeals },
+        );
+      }
+    } catch (error) {
+      console.error("Error saving after remove:", error);
+    }
   };
 
   const getProgressPercentage = (current: number, goal: number) => {
@@ -720,4 +804,3 @@ const NutritionTracker: React.FC<NutritionTrackerProps> = ({ darkMode }) => {
 };
 
 export default NutritionTracker;
-

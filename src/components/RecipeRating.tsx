@@ -51,7 +51,8 @@ const RecipeRating = ({
   recipeName,
   darkMode,
 }: RecipeRatingProps) => {
-  const { currentUser } = useAuth();
+  const { currentUser, isDemoUser } = useAuth();
+  const ratingsKey = `ratings_recipe_${recipeId}`;
   const [rating, setRating] = useState<number>(0);
   const [review, setReview] = useState<string>("");
   const [userRating, setUserRating] = useState<UserRating | null>(null);
@@ -62,8 +63,22 @@ const RecipeRating = ({
   const loadUserRating = useCallback(async () => {
     if (!currentUser) return;
     try {
+      if (isDemoUser) {
+        const raw = localStorage.getItem(ratingsKey);
+        if (raw) {
+          const list = JSON.parse(raw) as Review[];
+          const mine = list.find((r) => r.userId === currentUser.uid);
+          if (mine) {
+            setUserRating({ rating: mine.rating, review: mine.review || "" });
+            setRating(mine.rating);
+            setReview(mine.review || "");
+            setSubmitted(true);
+          }
+        }
+        return;
+      }
       const ratingDoc = await getDoc(
-        doc(db, "ratings", `${currentUser.uid}_${recipeId}`)
+        doc(db, "ratings", `${currentUser.uid}_${recipeId}`),
       );
       if (ratingDoc.exists()) {
         const data = ratingDoc.data();
@@ -75,25 +90,31 @@ const RecipeRating = ({
     } catch (error) {
       console.error("Error loading user rating:", error);
     }
-  }, [currentUser, recipeId]);
+  }, [currentUser, isDemoUser, recipeId, ratingsKey]);
 
   const loadAllReviews = useCallback(async () => {
     try {
+      if (isDemoUser) {
+        const raw = localStorage.getItem(ratingsKey);
+        const list = raw ? (JSON.parse(raw) as Review[]) : [];
+        setAllReviews(list.sort((a, b) => b.timestamp - a.timestamp));
+        return;
+      }
       const reviewsQuery = query(
         collection(db, "ratings"),
-        where("recipeId", "==", recipeId)
+        where("recipeId", "==", recipeId),
       );
       const querySnapshot = await getDocs(reviewsQuery);
       const reviews: Review[] = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data() as Review;
-        reviews.push({ ...data, id: doc.id });
+      querySnapshot.forEach((d) => {
+        const data = d.data() as Review;
+        reviews.push({ ...data, id: d.id });
       });
       setAllReviews(reviews.sort((a, b) => b.timestamp - a.timestamp));
     } catch (error) {
       console.error("Error loading reviews:", error);
     }
-  }, [recipeId]);
+  }, [recipeId, isDemoUser, ratingsKey]);
 
   useEffect(() => {
     if (currentUser && recipeId) {
@@ -119,16 +140,29 @@ const RecipeRating = ({
         timestamp: Date.now(),
       };
 
-      await setDoc(
-        doc(db, "ratings", `${currentUser.uid}_${recipeId}`),
-        ratingData
-      );
+      if (isDemoUser) {
+        const raw = localStorage.getItem(ratingsKey);
+        const list = raw ? (JSON.parse(raw) as Review[]) : [];
+        const rest = list.filter((r) => r.userId !== currentUser.uid);
+        localStorage.setItem(
+          ratingsKey,
+          JSON.stringify(
+            [...rest, ratingData].sort((a, b) => b.timestamp - a.timestamp),
+          ),
+        );
+      } else {
+        await setDoc(
+          doc(db, "ratings", `${currentUser.uid}_${recipeId}`),
+          ratingData,
+        );
+      }
       setSubmitted(true);
       loadAllReviews();
     } catch (error) {
       console.error("Error submitting rating:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const averageRating =
