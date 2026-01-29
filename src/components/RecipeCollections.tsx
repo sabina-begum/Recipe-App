@@ -13,6 +13,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useAuth } from "../contexts/useAuth";
 import { addNotification } from "../utils/notificationUtils";
+import { featuredRecipes } from "../data/recipes";
 import CollectionCard from "./RecipeCollections/CollectionCard";
 import CollectionDetails from "./RecipeCollections/CollectionDetails";
 import CreateCollectionModal from "./RecipeCollections/CreateCollectionModal";
@@ -118,27 +119,15 @@ const RecipeCollections: React.FC<RecipeCollectionsProps> = ({ darkMode }) => {
           })),
         );
       } else {
-        // Show sample recipes for non-logged in users
-        setAvailableRecipes([
-          {
-            id: "1",
-            name: "Spaghetti Carbonara",
-            category: "Italian",
-            source: "sample",
-          },
-          {
-            id: "2",
-            name: "Chicken Stir Fry",
-            category: "Asian",
-            source: "sample",
-          },
-          {
-            id: "3",
-            name: "Taco Tuesday",
-            category: "Mexican",
-            source: "sample",
-          },
-        ]);
+        // Show featured recipes for non-logged-in users
+        setAvailableRecipes(
+          featuredRecipes.map((r) => ({
+            id: r.id,
+            name: r.name,
+            category: r.category || "Other",
+            source: "featured",
+          }))
+        );
       }
     } catch (error) {
       console.error("Error loading available recipes:", error);

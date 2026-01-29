@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../contexts/useAuth";
+import { featuredRecipes } from "../data/recipes";
 
 interface Recipe {
   id: string;
@@ -93,40 +94,60 @@ const MealPlanningCalendar: React.FC<MealPlanningCalendarProps> = ({
       loadMealPlan();
       loadAvailableRecipes();
     }
-  }, [currentUser, currentDate, loadMealPlan]);
+  }, [currentUser, currentDate, loadMealPlan, loadAvailableRecipes]);
 
-  const loadAvailableRecipes = (): void => {
+  const loadAvailableRecipes = useCallback((): void => {
     try {
-      // For demo purposes, we'll use sample recipes
-      const sampleRecipes: Recipe[] = [
-        { id: "1", name: "Chicken Pasta", category: "Dinner", source: "api" },
-        { id: "2", name: "Greek Salad", category: "Lunch", source: "api" },
-        { id: "3", name: "Oatmeal Bowl", category: "Breakfast", source: "api" },
-        {
-          id: "4",
-          name: "Smoothie Bowl",
-          category: "Breakfast",
-          source: "api",
-        },
-        { id: "5", name: "Grilled Salmon", category: "Dinner", source: "api" },
-        { id: "6", name: "Quinoa Bowl", category: "Lunch", source: "api" },
-        { id: "7", name: "Energy Balls", category: "Snack", source: "api" },
-        { id: "8", name: "Stir Fry", category: "Dinner", source: "api" },
-        {
-          id: "9",
-          name: "Avocado Toast",
-          category: "Breakfast",
-          source: "api",
-        },
-        { id: "10", name: "Caesar Salad", category: "Lunch", source: "api" },
-        { id: "11", name: "Beef Tacos", category: "Dinner", source: "api" },
-        { id: "12", name: "Fruit Smoothie", category: "Snack", source: "api" },
-      ];
-      setAvailableRecipes(sampleRecipes);
+      const byId = new Map<string, Recipe>();
+
+      if (currentUser) {
+        if (isDemoUser) {
+          const demo = JSON.parse(localStorage.getItem("demoUser") || "{}");
+          const favorites = (demo.demoData?.favorites || []) as Array<{
+            id?: string;
+            title?: string;
+            name?: string;
+            category?: string;
+          }>;
+          favorites.forEach((fav) => {
+            const id = String(fav.id ?? "");
+            if (id) byId.set(id, { id, name: (fav.title ?? fav.name) || "Unknown", category: fav.category || "Other", source: "favorite" });
+          });
+          const collections = (demo.demoData?.collections || []) as Array<{ recipes?: Array<{ id: string; name?: string; category?: string }> }>;
+          collections.forEach((col) => {
+            (col.recipes || []).forEach((r) => {
+              const id = String(r.id ?? "");
+              if (id && !byId.has(id)) byId.set(id, { id, name: (r.name as string) || "Unknown", category: (r.category as string) || "Other", source: "collection" });
+            });
+          });
+        } else {
+          const favorites = JSON.parse(localStorage.getItem(`favorites_${currentUser.uid}`) || "[]") as Array<{ id?: string; recipeId?: string; title?: string; name?: string; category?: string }>;
+          favorites.forEach((fav) => {
+            const id = String(fav.id ?? fav.recipeId ?? "");
+            if (id) byId.set(id, { id, name: (fav.title ?? fav.name) || "Unknown", category: fav.category || "Other", source: "favorite" });
+          });
+          const collections = JSON.parse(localStorage.getItem(`collections_${currentUser.uid}`) || "[]") as Array<{ recipes?: Array<{ id: string; name?: string; category?: string }> }>;
+          collections.forEach((col) => {
+            (col.recipes || []).forEach((r) => {
+              const id = String(r.id ?? "");
+              if (id && !byId.has(id)) byId.set(id, { id, name: (r.name as string) || "Unknown", category: (r.category as string) || "Other", source: "collection" });
+            });
+          });
+        }
+      }
+
+      if (byId.size === 0) {
+        featuredRecipes.forEach((r) => {
+          byId.set(r.id, { id: r.id, name: r.name, category: r.category || "Other", source: "featured" });
+        });
+      }
+
+      setAvailableRecipes(Array.from(byId.values()));
     } catch (error) {
       console.error("Error loading recipes:", error);
+      setAvailableRecipes(featuredRecipes.map((r) => ({ id: r.id, name: r.name, category: r.category || "Other", source: "featured" })));
     }
-  };
+  }, [currentUser, isDemoUser]);
 
   const saveMealPlan = (newMeals: MealsState): void => {
     try {
