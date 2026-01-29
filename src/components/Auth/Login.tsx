@@ -61,12 +61,12 @@ function Login({ darkMode }: { darkMode: boolean }) {
           setError("Too many failed attempts. Please try again later.");
         } else {
           setError(
-            "Failed to log in. Please check your credentials and try again."
+            "Failed to log in. Please check your credentials and try again.",
           );
         }
       } else {
         setError(
-          "Failed to log in. Please check your credentials and try again."
+          "Failed to log in. Please check your credentials and try again.",
         );
       }
     } finally {
@@ -140,8 +140,8 @@ function Login({ darkMode }: { darkMode: boolean }) {
         },
       };
 
-      // Simulate login delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Brief delay for "Creating..." feedback
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Store demo user in localStorage for persistence
       localStorage.setItem("demoUser", JSON.stringify(demoUser));
