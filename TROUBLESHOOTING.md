@@ -39,7 +39,7 @@ npm run troubleshoot
    npm run cleanup
    ```
 3. **Check for circular dependencies** in your imports
-4. **Use defensive imports** (see `src/utils/safeImports.js`)
+4. **Use defensive imports** (see `src/utils/safeImports.tsx`)
 
 ### 🔴 "Cannot read properties of null (reading 'useContext')"
 
@@ -47,8 +47,8 @@ npm run troubleshoot
 
 **Solutions:**
 
-1. **Check provider order** in `main.jsx`
-2. **Use safe context hooks** (see `src/components/navbar/Navbar.jsx`)
+1. **Check provider order** in `main.tsx`
+2. **Use safe context hooks** (see `src/components/Navbar.tsx`)
 3. **Clear browser data** completely
 4. **Restart development server**
 
@@ -179,7 +179,7 @@ npm run dev:fresh
 ### 3. **Health Check Utility**
 
 ```javascript
-import moduleHealthCheck from "./src/utils/moduleHealthCheck.js";
+import moduleHealthCheck from "./src/utils/moduleHealthCheck.ts";
 
 // Run health check
 moduleHealthCheck.logHealthCheck();

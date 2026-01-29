@@ -1,7 +1,7 @@
 # CULINARIA - Professional Cooking Platform & Recipe Discovery
 
 <div align="center">
-  <img src="src/assets/logo.svg" alt="CULINARIA Logo" width="120" height="120" />
+  <img src="src/assets/foodie-logo-simple.svg" alt="CULINARIA Logo" width="120" height="120" />
   <h1>🍽️ CULINARIA</h1>
   <p><strong>Professional Cooking Platform & Recipe Discovery</strong></p>
 </div>
@@ -78,10 +78,10 @@
 4. **Set up environment variables**
 
    ```bash
-   cp .env.example .env.local
+   cp env.example .env.local
    ```
 
-   Edit `.env.local` with your Firebase configuration and USDA API key.
+   Edit `.env.local` with your Firebase configuration, USDA API key, and optional social URLs (`VITE_GITHUB_URL`, `VITE_TWITTER_URL`, `VITE_LINKEDIN_URL`).
 
 5. **Start the development server**
 
@@ -139,14 +139,16 @@
 
 ```
 src/
-├── components/          # React components
+├── components/          # React components (Navbar, RecipeReviews, etc.)
 │   ├── navbar/         # Navigation components
-│   ├── heading/        # Header components
+│   ├── home/           # Home page sections
 │   └── ...
-├── assets/             # Static assets (images, logos)
-├── lib/                # Utility functions
-├── services/           # API services
-├── contexts/           # React contexts
+├── features/recipes/   # Recipe pages (Home, RecipeCard, etc.)
+├── assets/             # Static assets (logos, favicons)
+├── data/               # Static data (recipes, categories, etc.)
+├── utils/              # Utility functions
+├── services/           # API services (nutrition, etc.)
+├── contexts/           # React contexts (Auth, DarkMode, Modal)
 └── hooks/              # Custom React hooks
 ```
 
@@ -171,6 +173,19 @@ src/
 2. Login: `firebase login`
 3. Initialize: `firebase init hosting`
 4. Deploy: `firebase deploy`
+
+## 📚 Documentation (project root)
+
+| File                                   | Purpose                                     |
+| -------------------------------------- | ------------------------------------------- |
+| `DEPLOYMENT_GUIDE.md`                  | Deploy to Vercel, Netlify, Firebase         |
+| `TROUBLESHOOTING.md`                   | Common dev/build issues                     |
+| `NUTRITION_API.md`                     | USDA nutrition integration                  |
+| `SECURITY.md` / `SECURITY_FEATURES.md` | Security and features                       |
+| `LOGO_DOCUMENTATION.md`                | Culinaria logo usage                        |
+| `BRAND_IMPLEMENTATION.md`              | Brand identity implementation               |
+| `LOGO_DESIGN.md`                       | Legacy: Foodie logo reference (pre-rebrand) |
+| `BRAND_NAME_OPTIONS.md`                | Legacy: Brand name options (reference)      |
 
 ## 🔒 Security Features
 
@@ -199,7 +214,7 @@ This is a proprietary project. For collaboration inquiries, please contact:
 For support and questions:
 
 - **Email**: begumsabina81193@gmail.com
-- **Documentation**: See the [docs](docs/) folder for detailed guides
+- **Documentation**: See markdown guides in the project root: `DEPLOYMENT_GUIDE.md`, `TROUBLESHOOTING.md`, `NUTRITION_API.md`, `SECURITY.md`, and related `*.md` files.
 
 ## 🙏 Acknowledgments
 
