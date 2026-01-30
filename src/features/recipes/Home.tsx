@@ -102,10 +102,11 @@ export default function HomePage({
 
     return (
       <div className="bg-main text-main min-h-screen w-full">
-        {/* Hero Section */}
-        <div className="w-full flex flex-col md:flex-row items-center justify-center min-h-[80vh] md:min-h-[90vh]">
+        {/* Hero Section — full width, height contained */}
+        <div className="w-screen max-w-none px-0 ml-[calc(50%-50vw)] mr-[calc(50%-50vw)] flex flex-col md:flex-row items-center justify-center min-h-[80vh] md:min-h-[90vh] bg-stone-50 dark:bg-neutral-900">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
           {/* Left: Hero Text & CTA */}
-          <div className="flex-1 flex flex-col items-center md:items-start justify-center py-12 md:py-0 px-4 md:px-0 max-w-2xl">
+          <div className="flex-1 flex flex-col items-center md:items-start justify-center py-12 md:py-0 max-w-2xl">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 text-neutral-900 dark:text-neutral-100 tracking-tight text-center md:text-left">
               Discover recipes to try at home
             </h2>
@@ -187,6 +188,7 @@ export default function HomePage({
               )}
             </div>
           </div>
+          </div>
         </div>
 
         {/* Featured recipes (all from dataset) */}
@@ -226,19 +228,32 @@ export default function HomePage({
           </div>
         </section>
 
-        {/* Category Shortcuts: Quick Access & Our Services */}
-        <section className="py-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h2 className="text-xl font-semibold mb-4 text-green-900 dark:text-green-300">
-              Quick Access
-            </h2>
-            <QuickAccessSection darkMode={darkMode} />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold mb-4 text-green-900 dark:text-green-300">
-              Our Services
-            </h2>
-            <ServicesSection darkMode={darkMode} />
+        {/* Category Shortcuts: Quick Access & Our Services — full-width bg, height contained */}
+        <section className="py-12 relative overflow-hidden rounded-xl w-screen max-w-none px-0 ml-[calc(50%-50vw)] mr-[calc(50%-50vw)]">
+          <div
+            className="absolute inset-0 bg-cover bg-center w-full m-0 p-0"
+            style={{
+              backgroundImage: `url(https://images.unsplash.com/photo-1495521821757-a1efb6729352?auto=format&fit=crop&w=1200&q=60)`,
+            }}
+            aria-hidden
+          />
+          <div
+            className="absolute inset-0 bg-white/85 dark:bg-black/75"
+            aria-hidden
+          />
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-green-900 dark:text-green-300">
+                Quick Access
+              </h2>
+              <QuickAccessSection darkMode={darkMode} />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold mb-4 text-green-900 dark:text-green-300">
+                Our Services
+              </h2>
+              <ServicesSection darkMode={darkMode} />
+            </div>
           </div>
         </section>
 
