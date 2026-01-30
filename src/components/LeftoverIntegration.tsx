@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
+import { isNonHalalIngredient } from "../utils/halal";
 import OptimizedImage from "./ui/OptimizedImage";
 
 const MEALDB_BASE = "https://www.themealdb.com/api/json/v1/1";
@@ -65,7 +66,10 @@ const LeftoverIntegration: React.FC<LeftoverIntegrationProps> = ({
       currentRecipeId?: string,
     ): Promise<LeftoverRecipeSuggestion[]> => {
       if (!ingredients.length) return [];
-      const normalized = ingredients.map((i) => i.toLowerCase().trim());
+      const normalized = ingredients
+        .map((i) => i.toLowerCase().trim())
+        .filter((i) => !isNonHalalIngredient(i));
+      if (!normalized.length) return [];
       const currentId = String(currentRecipeId ?? "").toLowerCase();
       const mealOverlaps: Record<
         string,

@@ -28,6 +28,7 @@ import { DarkModeProvider } from "./contexts/DarkModeContext";
 import { useNutritionData } from "./hooks/useNutritionData";
 import performanceService from "./services/performanceService";
 import { extractIngredientsFromRecipe } from "./utils/apiUtils";
+import { isHalal } from "./utils/halal";
 import Toast from "./components/Toast";
 import { AuthProvider } from "./contexts/AuthContext";
 import type { Recipe } from "./global";
@@ -59,50 +60,6 @@ function App() {
     return ["/login", "/signup"].includes(location.pathname);
   }, [location.pathname]);
 
-  // Function to check if recipe contains pork or alcohol
-  const containsPorkOrAlcohol = (recipe: Recipe) => {
-    const searchTerms = [
-      "pork",
-      "bacon",
-      "ham",
-      "sausage",
-      "prosciutto",
-      "pancetta",
-      "lard",
-      "speck",
-      "alcohol",
-      "wine",
-      "beer",
-      "vodka",
-      "whiskey",
-      "rum",
-      "gin",
-      "tequila",
-      "brandy",
-      "sherry",
-      "port",
-      "cognac",
-      "bourbon",
-      "scotch",
-      "liqueur",
-      "schnapps",
-      "absinthe",
-    ];
-
-    const recipeText = [
-      recipe.strMeal?.toLowerCase() || "",
-      recipe.strCategory?.toLowerCase() || "",
-      recipe.strArea?.toLowerCase() || "",
-      recipe.strInstructions?.toLowerCase() || "",
-      ...Array.from(
-        { length: 20 },
-        (_, i) => recipe[`strIngredient${i + 1}`]?.toLowerCase() || "",
-      ),
-    ].join(" ");
-
-    return searchTerms.some((term) => recipeText.includes(term));
-  };
-
   const handleSearch = useCallback(
     async (query: string) => {
       console.log("App handleSearch called with:", query);
@@ -128,10 +85,8 @@ function App() {
           return;
         }
 
-        // Filter out recipes containing pork or alcohol
-        const filteredMeals = meals.filter(
-          (meal: Recipe) => !containsPorkOrAlcohol(meal),
-        );
+        // Halal filter: exclude pork and alcohol
+        const filteredMeals = meals.filter((meal: Recipe) => isHalal(meal));
 
         if (!filteredMeals.length) {
           setSelected(null);
@@ -194,7 +149,9 @@ function App() {
     performanceService
       .cachedFetch(url)
       .then((json: { meals?: Recipe[] }) => {
-        if (!cancelled) setSelected(json.meals?.[0] ?? null);
+        if (cancelled) return;
+        const meal = json.meals?.[0];
+        setSelected(meal && isHalal(meal) ? meal : null);
       })
       .catch(() => {
         if (!cancelled) setSelected(null);

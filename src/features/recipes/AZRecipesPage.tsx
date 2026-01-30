@@ -18,6 +18,7 @@ import ErrorMessage from "../../components/ErrorMessage";
 import Button from "../../components/ui/Button";
 import OptimizedImage from "../../components/ui/OptimizedImage";
 import performanceService from "../../services/performanceService";
+import { isHalal } from "../../utils/halal";
 import type { Recipe } from "../../global";
 
 interface Meal {
@@ -36,50 +37,6 @@ export default function AZRecipesPage({ darkMode }: AZRecipesPageProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Function to check if recipe contains pork or alcohol
-  const containsPorkOrAlcohol = (recipe: Recipe) => {
-    const searchTerms = [
-      "pork",
-      "bacon",
-      "ham",
-      "sausage",
-      "prosciutto",
-      "pancetta",
-      "lard",
-      "speck",
-      "alcohol",
-      "wine",
-      "beer",
-      "vodka",
-      "whiskey",
-      "rum",
-      "gin",
-      "tequila",
-      "brandy",
-      "sherry",
-      "port",
-      "cognac",
-      "bourbon",
-      "scotch",
-      "liqueur",
-      "schnapps",
-      "absinthe",
-    ];
-
-    const recipeText = [
-      recipe.strMeal?.toLowerCase() || "",
-      recipe.strCategory?.toLowerCase() || "",
-      recipe.strArea?.toLowerCase() || "",
-      recipe.strInstructions?.toLowerCase() || "",
-      ...Array.from(
-        { length: 20 },
-        (_, i) => recipe[`strIngredient${i + 1}`]?.toLowerCase() || ""
-      ),
-    ].join(" ");
-
-    return searchTerms.some((term) => recipeText.includes(term));
-  };
-
   useEffect(() => {
     async function fetchByLetter() {
       setLoading(true);
@@ -90,10 +47,8 @@ export default function AZRecipesPage({ darkMode }: AZRecipesPageProps) {
         const json = await performanceService.cachedFetch(url);
         const allMeals = json.meals || [];
 
-        // Filter out recipes containing pork or alcohol
-        const filteredMeals = allMeals.filter(
-          (meal: Recipe) => !containsPorkOrAlcohol(meal)
-        );
+        // Halal filter: exclude pork and alcohol
+        const filteredMeals = allMeals.filter((meal: Recipe) => isHalal(meal));
         setMeals(filteredMeals);
       } catch (err) {
         console.error(err);
