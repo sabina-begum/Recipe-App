@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import type { Recipe, NutritionData } from "../../global";
 import { cleanInstruction, isMeaningfulStep } from "../../utils/textFormatters";
 import FoodCategory from "../../components/FoodCategory";
@@ -25,6 +26,10 @@ export default function RecipeDetailsSection({
   darkMode,
   nutritionLoading,
 }: RecipeDetailsSectionProps) {
+  useEffect(() => {
+    if (selected) window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [selected?.idMeal]);
+
   if (!selected)
     return (
       <h2
