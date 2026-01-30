@@ -96,7 +96,7 @@
 ## 🛠️ Technology Stack
 
 - **Frontend**: React 18, Vite, Tailwind CSS
-- **Backend**: Firebase (Authentication, Firestore, Storage)
+- **Backend**: Firebase (Auth, Firestore); optional custom API in `server/` (Express) for featured recipes and TheMealDB proxy
 - **State Management**: React Context API
 - **Nutrition API**: USDA FoodData Central
 - **Deployment**: Vercel, Netlify, or Firebase Hosting
@@ -131,26 +131,48 @@
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
+- `npm run test` - Run unit tests (Jest)
+- `npm run test:watch` - Run tests in watch mode
 - `npm run lint` - Run ESLint
-- `npm run format` - Format code with Prettier
 - `npm run security:check` - Run security checks
 - `npm run deploy` - Deploy to production
+
+### Custom API (Backend)
+
+A minimal Express API is included for portfolio full-stack demo:
+
+- **Run**: `cd server && npm install && npm run dev` (listens on `http://localhost:3001` by default).
+- **Endpoints**:
+  - `GET /api/health` - Health check
+  - `GET /api/recipes/featured` - Featured recipes (JSON)
+  - `GET /api/recipes/search?q=...` - Proxy to TheMealDB search
+
+The frontend currently uses TheMealDB directly; you can switch to this API via env or a config base URL.
+
+### Tests
+
+- **Run**: `npm test` (requires `npm install` first; uses Jest + ts-jest).
+- Unit tests live in `src/utils/__tests__/` (e.g. `halal.test.ts`, `apiUtils.test.ts`) and `src/components/__tests__/` (e.g. `Favorites.test.tsx`).
 
 ### Project Structure
 
 ```
 src/
 ├── components/          # React components (Navbar, RecipeReviews, etc.)
+│   ├── __tests__/      # Component tests
 │   ├── navbar/         # Navigation components
 │   ├── home/           # Home page sections
 │   └── ...
 ├── features/recipes/   # Recipe pages (Home, RecipeCard, etc.)
-├── assets/             # Static assets (logos, favicons)
 ├── data/               # Static data (recipes, categories, etc.)
-├── utils/              # Utility functions
+├── utils/              # Utility functions (halal, apiUtils, etc.)
+│   └── __tests__/      # Unit tests
 ├── services/           # API services (nutrition, etc.)
 ├── contexts/           # React contexts (Auth, DarkMode, Modal)
 └── hooks/              # Custom React hooks
+server/                 # Optional Express API (featured recipes, search proxy)
+├── data/               # featuredRecipes.json
+└── index.js
 ```
 
 ## 🚀 Deployment
