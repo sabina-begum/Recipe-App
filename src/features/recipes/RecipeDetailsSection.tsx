@@ -1,4 +1,5 @@
 import type { Recipe, NutritionData } from "../../global";
+import { cleanInstruction, isMeaningfulStep } from "../../utils/textFormatters";
 import FoodCategory from "../../components/FoodCategory";
 import Ingredients from "../../components/Ingredients";
 import Instructions from "../../components/Instructions";
@@ -77,7 +78,10 @@ export default function RecipeDetailsSection({
           <StepByStepMode
             steps={
               selected.strInstructions
-                ? selected.strInstructions.split(/\n+/).filter(Boolean)
+                ? selected.strInstructions
+                    .split(/\r?\n/)
+                    .map(cleanInstruction)
+                    .filter(isMeaningfulStep)
                 : []
             }
             darkMode={darkMode}

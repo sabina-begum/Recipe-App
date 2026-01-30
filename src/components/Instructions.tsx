@@ -11,7 +11,7 @@
  * Educational use only - Commercial use prohibited.
  */
 
-import { cleanInstruction } from "../utils/textFormatters";
+import { cleanInstruction, isMeaningfulStep } from "../utils/textFormatters";
 
 interface InstructionsProps {
   instructions: string;
@@ -22,9 +22,9 @@ function Instructions({ instructions, darkMode }: InstructionsProps) {
   if (!instructions) return null;
 
   const steps = instructions
-    .split("\n")
+    .split(/\r?\n/)
     .map((step: string) => cleanInstruction(step))
-    .filter((step: string) => step.trim() !== "");
+    .filter(isMeaningfulStep);
 
   return (
     <div className="instructions-section p-4 sm:p-6 my-4 rounded-lg shadow-lg bg-card border border-border relative">
