@@ -16,7 +16,7 @@ export default function ServicesSection({ darkMode }: ServicesSectionProps) {
           to="/meal-planning"
           className={`flex-1 compact-card-compact text-center hover:shadow-lg transition-all duration-200 ${
             darkMode
-              ? "bg-stone-900 hover:bg-stone-800 hover:shadow-stone-700"
+              ? "bg-stone-900 hover:bg-stone-800 hover:shadow-lg hover:shadow-black/20"
               : "bg-gradient-to-r from-orange-50 to-amber-50 hover:shadow-lg"
           }`}
         >
@@ -41,7 +41,7 @@ export default function ServicesSection({ darkMode }: ServicesSectionProps) {
           to="/recipes"
           className={`flex-1 compact-card-compact text-center hover:shadow-lg transition-all duration-200 ${
             darkMode
-              ? "bg-stone-900 hover:bg-stone-800 hover:shadow-stone-700"
+              ? "bg-stone-900 hover:bg-stone-800 hover:shadow-lg hover:shadow-black/20"
               : "bg-gradient-to-r from-orange-50 to-amber-50 hover:shadow-lg"
           }`}
         >
@@ -66,7 +66,7 @@ export default function ServicesSection({ darkMode }: ServicesSectionProps) {
           to="/nutrition-tracker"
           className={`flex-1 compact-card-compact text-center hover:shadow-lg transition-all duration-200 ${
             darkMode
-              ? "bg-stone-900 hover:bg-stone-800 hover:shadow-stone-700"
+              ? "bg-stone-900 hover:bg-stone-800 hover:shadow-lg hover:shadow-black/20"
               : "bg-gradient-to-r from-orange-50 to-amber-50 hover:shadow-lg"
           }`}
         >
@@ -91,7 +91,7 @@ export default function ServicesSection({ darkMode }: ServicesSectionProps) {
           to="/shopping-list"
           className={`flex-1 compact-card-compact text-center hover:shadow-lg transition-all duration-200 ${
             darkMode
-              ? "bg-stone-900 hover:bg-stone-800 hover:shadow-stone-700"
+              ? "bg-stone-900 hover:bg-stone-800 hover:shadow-lg hover:shadow-black/20"
               : "bg-gradient-to-r from-orange-50 to-amber-50 hover:shadow-lg"
           }`}
         >
