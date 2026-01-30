@@ -107,7 +107,7 @@ export default function HomePage({
           {/* Left: Hero Text & CTA */}
           <div className="flex-1 flex flex-col items-center md:items-start justify-center py-12 md:py-0 px-4 md:px-0 max-w-2xl">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6 text-neutral-900 dark:text-neutral-100 tracking-tight text-center md:text-left">
-              Discover Recipes to Try at Home
+              Discover recipes to try at home
             </h2>
             <p className="text-lg md:text-xl text-muted-foreground mb-8 text-center md:text-left max-w-xl">
               Browse featured recipes, save favorites, plan meals, and build

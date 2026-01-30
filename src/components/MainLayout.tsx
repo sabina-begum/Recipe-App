@@ -14,7 +14,7 @@ import QuickAddModal from "./QuickAddModal";
 import NotificationsModal from "./NotificationsModal";
 
 interface HeroHeaderProps {
-  handleSearch: (query: string) => void;
+  handleSearch: (query: string) => void | Promise<void>;
 }
 
 function HeroHeader({ handleSearch }: HeroHeaderProps) {
@@ -27,7 +27,7 @@ function HeroHeader({ handleSearch }: HeroHeaderProps) {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="lg:w-80 flex-shrink-0">
             <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight text-green-900 dark:text-green-300 text-center lg:text-left">
-              Discover New Recipes
+              Discover Halal Recipes
             </h1>
           </div>
           <div className="flex-1 lg:max-w-2xl">
@@ -49,7 +49,7 @@ function HeroHeader({ handleSearch }: HeroHeaderProps) {
 
 interface MainLayoutProps {
   children: ReactNode;
-  handleSearch: (query: string) => void;
+  handleSearch: (query: string) => void | Promise<void>;
 }
 
 export default function MainLayout({
