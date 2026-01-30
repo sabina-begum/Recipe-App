@@ -13,7 +13,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { isNonHalalIngredient } from "../utils/halal";
+import { isHalal, isNonHalalIngredient } from "../utils/halal";
 import OptimizedImage from "./ui/OptimizedImage";
 
 const MEALDB_BASE = "https://www.themealdb.com/api/json/v1/1";
@@ -120,22 +120,37 @@ const LeftoverIntegration: React.FC<LeftoverIntegrationProps> = ({
       const entries = Object.entries(mealOverlaps)
         .filter(([, v]) => v.count > 0)
         .sort((a, b) => b[1].count - a[1].count)
-        .slice(0, 12);
+        .slice(0, 20);
 
-      return entries.map(([idMeal, v], index) => ({
-        id: index + 1,
-        mealId: idMeal,
-        name: v.strMeal,
-        description:
-          v.matched.length > 0
-            ? `Uses your leftovers: ${v.matched.slice(0, 5).join(", ")}${v.matched.length > 5 ? "…" : ""}`
-            : "From TheMealDB",
-        ingredients: v.matched,
-        difficulty: "Easy" as const,
-        time: "—",
-        image: v.strMealThumb,
-        category: "—",
-      }));
+      const suggestions: LeftoverRecipeSuggestion[] = [];
+      let id = 0;
+      for (const [idMeal, v] of entries) {
+        if (suggestions.length >= 12) break;
+        try {
+          const res = await fetch(`${MEALDB_BASE}/lookup.php?i=${idMeal}`);
+          const json = (await res.json()) as { meals?: Array<Record<string, unknown>> };
+          const meal = json.meals?.[0];
+          if (!meal || !isHalal(meal as Parameters<typeof isHalal>[0])) continue;
+          id += 1;
+          suggestions.push({
+            id,
+            mealId: idMeal,
+            name: v.strMeal,
+            description:
+              v.matched.length > 0
+                ? `Uses your leftovers: ${v.matched.slice(0, 5).join(", ")}${v.matched.length > 5 ? "…" : ""}`
+                : "From TheMealDB",
+            ingredients: v.matched,
+            difficulty: "Easy",
+            time: "—",
+            image: v.strMealThumb,
+            category: "—",
+          });
+        } catch {
+          // skip failed lookup
+        }
+      }
+      return suggestions;
     },
     [],
   );
