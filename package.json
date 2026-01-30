@@ -26,7 +26,9 @@
     "dev:clean": "npm run cleanup && npm run dev",
     "dev:fresh": "npm run cleanup:full && npm install && npm run dev",
     "health-check": "node -e \"import('./src/utils/moduleHealthCheck.js').then(m => m.default.logHealthCheck())\"",
-    "troubleshoot": "npm run cleanup:check && npm run health-check"
+    "troubleshoot": "npm run cleanup:check && npm run health-check",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
@@ -46,6 +48,8 @@
     "@tailwindcss/postcss": "^4.1.11",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
     "@types/node": "^24.0.12",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
