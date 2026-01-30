@@ -27,6 +27,7 @@ import { formatDate } from "../../utils/dateUtils";
 
 interface RecipeReviewsProps {
   recipeId: string;
+  recipeName?: string;
   darkMode: boolean;
 }
 
@@ -39,7 +40,11 @@ interface UserReview {
   photos: unknown[];
 }
 
-const RecipeReviews = ({ recipeId, darkMode }: RecipeReviewsProps) => {
+const RecipeReviews = ({
+  recipeId,
+  recipeName: recipeNameProp,
+  darkMode,
+}: RecipeReviewsProps) => {
   const { currentUser } = useAuth() as { currentUser: User | null };
   const [reviews, setReviews] = useState<Review[]>([]);
   const [userReview, setUserReview] = useState<UserReview>({
@@ -53,10 +58,10 @@ const RecipeReviews = ({ recipeId, darkMode }: RecipeReviewsProps) => {
   const [showReviewForm, setShowReviewForm] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Load reviews from localStorage (simulated database)
+  // Load reviews from localStorage
   useEffect(() => {
     const savedReviews: Review[] = JSON.parse(
-      localStorage.getItem(`reviews_${recipeId}`) || "[]"
+      localStorage.getItem(`reviews_${recipeId}`) || "[]",
     );
     setReviews(savedReviews);
   }, [recipeId]);
@@ -82,7 +87,7 @@ const RecipeReviews = ({ recipeId, darkMode }: RecipeReviewsProps) => {
         id: Date.now().toString(),
         userName: currentUser.displayName || currentUser.email || "Anonymous",
         recipeId: recipeId,
-        recipeName: "Recipe", // Default name since we don't have the actual recipe name
+        recipeName: recipeNameProp ?? "Recipe",
         rating: userReview.rating,
         comment: userReview.comment,
         difficulty: userReview.difficulty,
@@ -97,7 +102,7 @@ const RecipeReviews = ({ recipeId, darkMode }: RecipeReviewsProps) => {
       setReviews(updatedReviews);
       localStorage.setItem(
         `reviews_${recipeId}`,
-        JSON.stringify(updatedReviews)
+        JSON.stringify(updatedReviews),
       );
 
       setUserReview({
@@ -123,15 +128,18 @@ const RecipeReviews = ({ recipeId, darkMode }: RecipeReviewsProps) => {
         return;
       }
 
-      setReviews((prev) =>
-        prev.map((review) =>
-          review.id === reviewId
-            ? { ...review, likes: review.likes + 1 }
-            : review
-        )
+      const updatedReviews = reviews.map((review) =>
+        review.id === reviewId
+          ? { ...review, likes: review.likes + 1 }
+          : review,
+      );
+      setReviews(updatedReviews);
+      localStorage.setItem(
+        `reviews_${recipeId}`,
+        JSON.stringify(updatedReviews),
       );
     },
-    [currentUser]
+    [currentUser, reviews, recipeId],
   );
 
   const handleMarkHelpful = useCallback(
@@ -141,15 +149,18 @@ const RecipeReviews = ({ recipeId, darkMode }: RecipeReviewsProps) => {
         return;
       }
 
-      setReviews((prev) =>
-        prev.map((review) =>
-          review.id === reviewId
-            ? { ...review, helpful: review.helpful + 1 }
-            : review
-        )
+      const updatedReviews = reviews.map((review) =>
+        review.id === reviewId
+          ? { ...review, helpful: review.helpful + 1 }
+          : review,
+      );
+      setReviews(updatedReviews);
+      localStorage.setItem(
+        `reviews_${recipeId}`,
+        JSON.stringify(updatedReviews),
       );
     },
-    [currentUser]
+    [currentUser, reviews, recipeId],
   );
 
   const averageRating =
@@ -265,8 +276,8 @@ const RecipeReviews = ({ recipeId, darkMode }: RecipeReviewsProps) => {
                     userReview.difficulty === index + 1
                       ? "bg-green-600 text-white"
                       : darkMode
-                      ? "bg-neutral-700 text-stone-300"
-                      : "bg-gray-200 text-gray-700"
+                        ? "bg-neutral-700 text-stone-300"
+                        : "bg-gray-200 text-gray-700"
                   }`}
                 >
                   {level}
@@ -365,8 +376,8 @@ const RecipeReviews = ({ recipeId, darkMode }: RecipeReviewsProps) => {
                 loading
                   ? "bg-neutral-600 cursor-not-allowed"
                   : darkMode
-                  ? "bg-orange-600 hover:bg-orange-700 text-white"
-                  : "bg-orange-500 hover:bg-orange-600 text-white"
+                    ? "bg-orange-600 hover:bg-orange-700 text-white"
+                    : "bg-orange-500 hover:bg-orange-600 text-white"
               }`}
             >
               {loading ? "Submitting..." : "Submit Review"}
@@ -401,7 +412,7 @@ const RecipeReviews = ({ recipeId, darkMode }: RecipeReviewsProps) => {
             .sort(
               (a, b) =>
                 new Date(b.timestamp).getTime() -
-                new Date(a.timestamp).getTime()
+                new Date(a.timestamp).getTime(),
             )
             .map((review: Review) => (
               <div

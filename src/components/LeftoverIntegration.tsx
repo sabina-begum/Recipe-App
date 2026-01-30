@@ -12,10 +12,14 @@
  */
 
 import React, { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import OptimizedImage from "./ui/OptimizedImage";
+
+const MEALDB_BASE = "https://www.themealdb.com/api/json/v1/1";
 
 export interface LeftoverRecipeSuggestion {
   id: number;
+  mealId: string;
   name: string;
   description: string;
   ingredients: string[];
@@ -37,6 +41,7 @@ const LeftoverIntegration: React.FC<LeftoverIntegrationProps> = ({
   const [leftoverRecipes, setLeftoverRecipes] = useState<
     LeftoverRecipeSuggestion[]
   >([]);
+  const [leftoverLoading, setLeftoverLoading] = useState(false);
   const [selectedIngredients, setSelectedIngredients] = useState<string[]>([]);
 
   // Extract ingredients from current recipe
@@ -54,91 +59,102 @@ const LeftoverIntegration: React.FC<LeftoverIntegrationProps> = ({
     return ingredients;
   }, [recipe]);
 
-  // Sample leftover recipe suggestions
-  const getLeftoverSuggestions = (
-    ingredients: string[],
-  ): LeftoverRecipeSuggestion[] => {
-    const suggestions: LeftoverRecipeSuggestion[] = [
-      {
-        id: 1,
-        name: "Leftover Chicken Stir Fry",
+  const fetchLeftoverSuggestions = useCallback(
+    async (
+      ingredients: string[],
+      currentRecipeId?: string,
+    ): Promise<LeftoverRecipeSuggestion[]> => {
+      if (!ingredients.length) return [];
+      const normalized = ingredients.map((i) => i.toLowerCase().trim());
+      const currentId = String(currentRecipeId ?? "").toLowerCase();
+      const mealOverlaps: Record<
+        string,
+        {
+          count: number;
+          strMeal: string;
+          strMealThumb: string;
+          matched: string[];
+        }
+      > = {};
+
+      for (const ing of normalized) {
+        const param = ing
+          .replace(/\s+/g, "_")
+          .replace(/^./, (c) => c.toUpperCase());
+        try {
+          const res = await fetch(
+            `${MEALDB_BASE}/filter.php?i=${encodeURIComponent(param)}`,
+          );
+          const json = (await res.json()) as {
+            meals?: Array<{
+              idMeal: string;
+              strMeal: string;
+              strMealThumb: string;
+            }>;
+          };
+          const meals = json.meals ?? [];
+          for (const m of meals) {
+            if (currentId && m.idMeal === currentId) continue;
+            if (!mealOverlaps[m.idMeal]) {
+              mealOverlaps[m.idMeal] = {
+                count: 0,
+                strMeal: m.strMeal ?? "",
+                strMealThumb: m.strMealThumb ?? "",
+                matched: [],
+              };
+            }
+            mealOverlaps[m.idMeal].count += 1;
+            if (!mealOverlaps[m.idMeal].matched.includes(ing)) {
+              mealOverlaps[m.idMeal].matched.push(ing);
+            }
+          }
+        } catch {
+          // skip failed ingredient
+        }
+      }
+
+      const entries = Object.entries(mealOverlaps)
+        .filter(([, v]) => v.count > 0)
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 12);
+
+      return entries.map(([idMeal, v], index) => ({
+        id: index + 1,
+        mealId: idMeal,
+        name: v.strMeal,
         description:
-          "Transform leftover chicken into a quick and delicious stir fry",
-        ingredients: ["chicken", "vegetables", "soy sauce"],
-        difficulty: "Easy",
-        time: "15 min",
-        image: "/src/assets/foodie-logo-simple.svg",
-        category: "Main Course",
-      },
-      {
-        id: 2,
-        name: "Rice Pudding",
-        description: "Sweet and creamy dessert using leftover rice",
-        ingredients: ["rice", "milk", "sugar", "cinnamon"],
-        difficulty: "Easy",
-        time: "20 min",
-        image: "/src/assets/foodie-logo-simple.svg",
-        category: "Dessert",
-      },
-      {
-        id: 3,
-        name: "Vegetable Soup",
-        description: "Hearty soup using leftover vegetables",
-        ingredients: ["vegetables", "broth", "herbs"],
-        difficulty: "Easy",
-        time: "25 min",
-        image: "/src/assets/foodie-logo-simple.svg",
-        category: "Soup",
-      },
-      {
-        id: 4,
-        name: "Pasta Frittata",
-        description: "Italian-style omelette with leftover pasta",
-        ingredients: ["pasta", "eggs", "cheese", "vegetables"],
-        difficulty: "Medium",
-        time: "20 min",
-        image: "/src/assets/foodie-logo-simple.svg",
-        category: "Breakfast",
-      },
-      {
-        id: 5,
-        name: "Bread Pudding",
-        description: "Classic dessert using stale bread",
-        ingredients: ["bread", "milk", "eggs", "sugar"],
-        difficulty: "Easy",
-        time: "45 min",
-        image: "/src/assets/foodie-logo-simple.svg",
-        category: "Dessert",
-      },
-      {
-        id: 6,
-        name: "Potato Hash",
-        description: "Breakfast hash with leftover potatoes",
-        ingredients: ["potato", "onion", "bell pepper", "eggs"],
-        difficulty: "Easy",
-        time: "15 min",
-        image: "/src/assets/foodie-logo-simple.svg",
-        category: "Breakfast",
-      },
-    ];
-    // Filter suggestions based on available ingredients
-    return suggestions.filter((suggestion) => {
-      const matchingIngredients = suggestion.ingredients.filter((ingredient) =>
-        ingredients.some(
-          (ing) => ing.includes(ingredient) || ingredient.includes(ing),
-        ),
-      );
-      return matchingIngredients.length >= 1; // At least one ingredient match
-    });
-  };
+          v.matched.length > 0
+            ? `Uses your leftovers: ${v.matched.slice(0, 5).join(", ")}${v.matched.length > 5 ? "…" : ""}`
+            : "From TheMealDB",
+        ingredients: v.matched,
+        difficulty: "Easy" as const,
+        time: "—",
+        image: v.strMealThumb,
+        category: "—",
+      }));
+    },
+    [],
+  );
 
   useEffect(() => {
-    if (recipe) {
-      const ingredients = extractIngredients();
-      const suggestions = getLeftoverSuggestions(ingredients);
-      setLeftoverRecipes(suggestions);
-    }
-  }, [recipe, extractIngredients]);
+    if (!recipe) return;
+    const ingredients = extractIngredients();
+    const currentId = (recipe as Record<string, unknown>).idMeal as
+      | string
+      | undefined;
+    let cancelled = false;
+    setLeftoverLoading(true);
+    setLeftoverRecipes([]);
+    fetchLeftoverSuggestions(ingredients, currentId).then((suggestions) => {
+      if (!cancelled) {
+        setLeftoverRecipes(suggestions);
+        setLeftoverLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [recipe, extractIngredients, fetchLeftoverSuggestions]);
 
   const handleIngredientToggle = (ingredient: string): void => {
     setSelectedIngredients((prev) =>
@@ -224,16 +240,21 @@ const LeftoverIntegration: React.FC<LeftoverIntegrationProps> = ({
         </div>
 
         {/* Leftover Recipe Suggestions */}
-        {leftoverRecipes.length > 0 ? (
+        {leftoverLoading ? (
+          <p className="text-sm text-muted-foreground py-4">
+            Loading leftover ideas from database…
+          </p>
+        ) : leftoverRecipes.length > 0 ? (
           <div className="space-y-4">
             <h4 className="text-md font-medium">
-              Suggested recipes using leftovers:
+              Suggested recipes using leftovers (from database):
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {leftoverRecipes.map((suggestion) => (
-                <div
-                  key={suggestion.id}
-                  className={`rounded-lg overflow-hidden border transition-all duration-200 hover:scale-105 cursor-pointer ${
+                <Link
+                  key={suggestion.mealId}
+                  to={`/recipe/${suggestion.mealId}`}
+                  className={`rounded-lg overflow-hidden border transition-all duration-200 hover:scale-105 cursor-pointer block ${
                     darkMode
                       ? "bg-green-700/50 border-green-500"
                       : "bg-white border-green-300"
@@ -295,7 +316,7 @@ const LeftoverIntegration: React.FC<LeftoverIntegrationProps> = ({
                       </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -337,4 +358,3 @@ const LeftoverIntegration: React.FC<LeftoverIntegrationProps> = ({
 };
 
 export default LeftoverIntegration;
-

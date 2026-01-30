@@ -1,5 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useAuth } from "../contexts/useAuth";
 import { ingredientCategories } from "../data/ingredientCategories";
+
+export interface InventoryItem {
+  id: number;
+  name: string;
+  quantity: number;
+  unit: string;
+  category: string;
+}
 
 interface IngredientInventoryProps {
   darkMode: boolean;
@@ -8,23 +17,10 @@ interface IngredientInventoryProps {
 const IngredientInventory: React.FC<IngredientInventoryProps> = ({
   darkMode,
 }) => {
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      name: "Eggs",
-      quantity: 12,
-      unit: "pcs",
-      category: "Dairy & Eggs",
-    },
-    {
-      id: 2,
-      name: "Chicken Breast",
-      quantity: 2,
-      unit: "lbs",
-      category: "Meat & Seafood",
-    },
-    { id: 3, name: "Rice", quantity: 1, unit: "bag", category: "Pantry" },
-  ]);
+  const { currentUser } = useAuth();
+  const storageKey = `ingredientInventory_${currentUser?.uid ?? "anonymous"}`;
+
+  const [items, setItems] = useState<InventoryItem[]>([]);
   const [newItem, setNewItem] = useState({
     name: "",
     quantity: "",
@@ -32,26 +28,57 @@ const IngredientInventory: React.FC<IngredientInventoryProps> = ({
     category: ingredientCategories[0],
   });
   const [showAdd, setShowAdd] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
-  const handleAdd = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!newItem.name.trim() || !newItem.quantity.trim()) return;
-    setItems([
-      ...items,
-      { ...newItem, id: Date.now(), quantity: Number(newItem.quantity) },
-    ]);
-    setNewItem({
-      name: "",
-      quantity: "",
-      unit: "",
-      category: ingredientCategories[0],
-    });
-    setShowAdd(false);
-  };
+  // Load inventory from localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw) as InventoryItem[];
+        if (Array.isArray(parsed)) setItems(parsed);
+      }
+    } catch {
+      // ignore invalid stored data
+    }
+    const t = window.setTimeout(() => setHasLoaded(true), 0);
+    return () => clearTimeout(t);
+  }, [storageKey]);
 
-  const handleRemove = (id: number) => {
-    setItems(items.filter((item) => item.id !== id));
-  };
+  // Persist inventory to localStorage when items change (after initial load)
+  useEffect(() => {
+    if (!hasLoaded) return;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(items));
+    } catch {
+      // ignore quota errors
+    }
+  }, [items, storageKey, hasLoaded]);
+
+  const handleAdd = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (!newItem.name.trim() || !newItem.quantity.trim()) return;
+      const added: InventoryItem = {
+        ...newItem,
+        id: Date.now(),
+        quantity: Number(newItem.quantity),
+      };
+      setItems((prev) => [...prev, added]);
+      setNewItem({
+        name: "",
+        quantity: "",
+        unit: "",
+        category: ingredientCategories[0],
+      });
+      setShowAdd(false);
+    },
+    [newItem],
+  );
+
+  const handleRemove = useCallback((id: number) => {
+    setItems((prev) => prev.filter((item) => item.id !== id));
+  }, []);
 
   return (
     <div
@@ -159,4 +186,3 @@ const IngredientInventory: React.FC<IngredientInventoryProps> = ({
 };
 
 export default IngredientInventory;
-

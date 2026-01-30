@@ -17,38 +17,6 @@ interface NotificationsModalProps {
   darkMode: boolean;
 }
 
-const getDemoNotifications = (): Notification[] => [
-  {
-    id: 1,
-    type: "meal_prep",
-    title: "Meal Prep Reminder",
-    message:
-      "Time to prep your weekly meals! You have 3 recipes planned for this week.",
-    time: "2 hours ago",
-    read: false,
-    priority: "high",
-  },
-  {
-    id: 2,
-    type: "ingredient_expiry",
-    title: "Ingredient Expiry Alert",
-    message: "Your milk expires tomorrow. Consider using it in a recipe today.",
-    time: "1 day ago",
-    read: false,
-    priority: "high",
-  },
-  {
-    id: 3,
-    type: "recipe_suggestion",
-    title: "Recipe Suggestion",
-    message:
-      "Based on your preferences, try our new 'Mediterranean Quinoa Bowl' recipe!",
-    time: "2 days ago",
-    read: true,
-    priority: "low",
-  },
-];
-
 const getNotificationIcon = (type: string): string => {
   switch (type) {
     case "meal_prep":
@@ -73,21 +41,25 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
   onClose,
   darkMode,
 }) => {
-  const { currentUser, isDemoUser } = useAuth();
+  const { currentUser } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // Load notifications
+  // Load notifications from localStorage (same key for demo and real users)
   useEffect(() => {
     if (!open) return;
-    if (isDemoUser) {
-      setNotifications(getDemoNotifications());
-    } else if (currentUser) {
-      const saved: Notification[] = JSON.parse(
-        localStorage.getItem(`notifications_${currentUser.uid}`) || "[]",
-      );
-      setNotifications(saved);
+    if (currentUser) {
+      try {
+        const saved: Notification[] = JSON.parse(
+          localStorage.getItem(`notifications_${currentUser.uid}`) || "[]",
+        );
+        setNotifications(Array.isArray(saved) ? saved : []);
+      } catch {
+        setNotifications([]);
+      }
+    } else {
+      setNotifications([]);
     }
-  }, [open, currentUser, isDemoUser]);
+  }, [open, currentUser]);
 
   // Update notificationsCount in context
   useEffect(() => {
@@ -95,13 +67,13 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
     // This would need to be implemented if notifications count is needed
   }, [notifications]);
 
-  // Mark as read
+  // Mark as read (persist for both demo and real users)
   const markAsRead = (id: number): void => {
     const updated = notifications.map((n) =>
       n.id === id ? { ...n, read: true } : n,
     );
     setNotifications(updated);
-    if (!isDemoUser && currentUser) {
+    if (currentUser) {
       localStorage.setItem(
         `notifications_${currentUser.uid}`,
         JSON.stringify(updated),
@@ -109,11 +81,11 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
     }
   };
 
-  // Delete notification
+  // Delete notification (persist for both demo and real users)
   const deleteNotification = (id: number): void => {
     const updated = notifications.filter((n) => n.id !== id);
     setNotifications(updated);
-    if (!isDemoUser && currentUser) {
+    if (currentUser) {
       localStorage.setItem(
         `notifications_${currentUser.uid}`,
         JSON.stringify(updated),
@@ -190,4 +162,3 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({
 };
 
 export default NotificationsModal;
-

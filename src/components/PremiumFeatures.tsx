@@ -136,12 +136,12 @@ const PremiumFeatures: React.FC<PremiumFeaturesProps> = ({
 
     setLoading(true);
     try {
-      // Simulate payment processing
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Brief delay for loading feedback before persisting
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       // Update user premium status in localStorage
       const userData = JSON.parse(
-        localStorage.getItem(`user_${currentUser.uid}`) || "{}"
+        localStorage.getItem(`user_${currentUser.uid}`) || "{}",
       );
       userData.premium = {
         plan: selectedPlan,
@@ -151,7 +151,7 @@ const PremiumFeatures: React.FC<PremiumFeaturesProps> = ({
             ? null
             : new Date(
                 Date.now() +
-                  (selectedPlan === "yearly" ? 365 : 30) * 24 * 60 * 60 * 1000
+                  (selectedPlan === "yearly" ? 365 : 30) * 24 * 60 * 60 * 1000,
               ).toISOString(),
       };
       localStorage.setItem(`user_${currentUser.uid}`, JSON.stringify(userData));
@@ -259,8 +259,8 @@ const PremiumFeatures: React.FC<PremiumFeaturesProps> = ({
                     selectedPlan === key
                       ? "border-orange-500 bg-orange-50 dark:bg-neutral-800"
                       : darkMode
-                      ? "border-neutral-700 bg-neutral-800 hover:border-neutral-600"
-                      : "border-gray-200 bg-white hover:border-gray-300"
+                        ? "border-neutral-700 bg-neutral-800 hover:border-neutral-600"
+                        : "border-gray-200 bg-white hover:border-gray-300"
                   }`}
                   onClick={() => setSelectedPlan(key)}
                 >

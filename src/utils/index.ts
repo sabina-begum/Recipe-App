@@ -38,6 +38,3 @@ export * from "./errorUtils";
 
 // Formatting utilities
 export * from "./formatUtils";
-
-// Conditional utilities
-// export * from "./conditionalUtils"; // Removed to avoid duplicate isDemoUser export

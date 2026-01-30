@@ -12,6 +12,8 @@
  */
 
 import React, { useState } from "react";
+import { cookingVideoTutorials } from "../data/cookingVideoTutorials";
+import type { CookingVideoData } from "../data/cookingVideoTutorials";
 
 interface CookingVideosProps {
   recipe: unknown;
@@ -22,28 +24,25 @@ interface Technique {
   keywords: string[];
   difficulty: string;
 }
-interface VideoData {
-  title: string;
-  description: string;
-  duration: string;
-  thumbnail: string;
-  videoUrl: string;
-}
 
 const CookingVideos: React.FC<CookingVideosProps> = ({ recipe, darkMode }) => {
   const [selectedTechnique, setSelectedTechnique] = useState<string | null>(
-    null
+    null,
   );
   const [showVideoModal, setShowVideoModal] = useState<boolean>(false);
 
-  // Extract cooking techniques from recipe instructions
+  // Extract cooking techniques from recipe instructions (API: strInstructions; featured: instructions or description)
   const extractCookingTechniques = (): Technique[] => {
-    if (!recipe || !(recipe as { strInstructions?: string }).strInstructions)
-      return [];
+    if (!recipe) return [];
+    const r = recipe as {
+      strInstructions?: string;
+      instructions?: string;
+      description?: string;
+    };
+    const raw = r.strInstructions ?? r.instructions ?? r.description ?? "";
+    if (!raw || typeof raw !== "string") return [];
 
-    const instructions = (
-      recipe as { strInstructions: string }
-    ).strInstructions.toLowerCase();
+    const instructions = raw.toLowerCase();
     const techniques: Technique[] = [
       {
         name: "Sautéing",
@@ -150,8 +149,8 @@ const CookingVideos: React.FC<CookingVideosProps> = ({ recipe, darkMode }) => {
 
     const foundTechniques = techniques.filter((technique: Technique) =>
       technique.keywords.some((keyword: string) =>
-        instructions.includes(keyword)
-      )
+        instructions.includes(keyword),
+      ),
     );
 
     return foundTechniques;
@@ -159,53 +158,10 @@ const CookingVideos: React.FC<CookingVideosProps> = ({ recipe, darkMode }) => {
 
   const cookingTechniques = extractCookingTechniques();
 
-  // Sample video data (in a real app, this would come from a video API)
-  const videoData: Record<string, VideoData> = {
-    Sautéing: {
-      title: "How to Sauté Like a Pro",
-      description:
-        "Master the art of sautéing with proper heat control and technique",
-      duration: "3:45",
-      thumbnail:
-        "https://via.placeholder.com/300x200/FF6B6B/FFFFFF?text=Sautéing",
-      videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    },
-    Braising: {
-      title: "Braising Basics: Tender, Flavorful Results",
-      description:
-        "Learn how to braise meats and vegetables for maximum flavor",
-      duration: "5:20",
-      thumbnail:
-        "https://via.placeholder.com/300x200/4ECDC4/FFFFFF?text=Braising",
-      videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    },
-    Searing: {
-      title: "Perfect Searing Technique",
-      description:
-        "Get that perfect golden crust every time with proper searing",
-      duration: "2:55",
-      thumbnail:
-        "https://via.placeholder.com/300x200/45B7D1/FFFFFF?text=Searing",
-      videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    },
-    Emulsifying: {
-      title: "Emulsification Made Easy",
-      description: "Create stable emulsions for sauces and dressings",
-      duration: "4:15",
-      thumbnail:
-        "https://via.placeholder.com/300x200/96CEB4/FFFFFF?text=Emulsifying",
-      videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    },
-    Kneading: {
-      title: "Kneading Dough: The Right Way",
-      description:
-        "Master the technique of kneading for perfect bread and pasta",
-      duration: "3:30",
-      thumbnail:
-        "https://via.placeholder.com/300x200/FFEAA7/FFFFFF?text=Kneading",
-      videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    },
-  };
+  // Curated real video data from src/data/cookingVideoTutorials
+  const getVideoForTechnique = (
+    techniqueName: string,
+  ): CookingVideoData | null => cookingVideoTutorials[techniqueName] ?? null;
 
   const getDifficultyColor = (difficulty: string): string => {
     switch (difficulty) {
@@ -296,7 +252,7 @@ const CookingVideos: React.FC<CookingVideosProps> = ({ recipe, darkMode }) => {
                   <h4 className="font-medium">{technique.name}</h4>
                   <span
                     className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyBgColor(
-                      technique.difficulty
+                      technique.difficulty,
                     )} ${getDifficultyColor(technique.difficulty)}`}
                   >
                     {technique.difficulty}
@@ -333,76 +289,84 @@ const CookingVideos: React.FC<CookingVideosProps> = ({ recipe, darkMode }) => {
       </div>
 
       {/* Video Modal */}
-      {showVideoModal && selectedTechnique && videoData[selectedTechnique] && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div
-            className={`relative max-w-4xl w-full rounded-lg overflow-hidden ${
-              darkMode ? "bg-gray-900" : "bg-white"
-            }`}
-          >
-            <button
-              onClick={() => setShowVideoModal(false)}
-              className={`absolute top-4 right-4 z-10 p-2 rounded-full ${
-                darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"
-              } hover:bg-gray-200 transition-colors`}
+      {showVideoModal &&
+        selectedTechnique &&
+        getVideoForTechnique(selectedTechnique) && (
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div
+              className={`relative max-w-4xl w-full rounded-lg overflow-hidden ${
+                darkMode ? "bg-gray-900" : "bg-white"
+              }`}
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                role="img"
-                aria-label="Close video modal"
+              <button
+                onClick={() => setShowVideoModal(false)}
+                className={`absolute top-4 right-4 z-10 p-2 rounded-full ${
+                  darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+                } hover:bg-gray-200 transition-colors`}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-
-            <div className="aspect-video">
-              <iframe
-                src={videoData[selectedTechnique].videoUrl}
-                title={videoData[selectedTechnique].title}
-                className="w-full h-full border-0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-
-            <div className="p-6">
-              <h3 className="text-xl font-semibold mb-2">
-                {videoData[selectedTechnique].title}
-              </h3>
-              <p className="text-gray-600 dark:text-stone-300 mb-3">
-                {videoData[selectedTechnique].description}
-              </p>
-              <div className="flex items-center text-sm text-gray-500">
                 <svg
-                  className="w-4 h-4 mr-1"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                   role="img"
-                  aria-label="Video duration"
+                  aria-label="Close video modal"
                 >
                   <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                    clipRule="evenodd"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
-                Duration: {videoData[selectedTechnique].duration}
-              </div>
+              </button>
+
+              {(() => {
+                const video = getVideoForTechnique(selectedTechnique)!;
+                return (
+                  <>
+                    <div className="aspect-video">
+                      <iframe
+                        src={video.videoUrl}
+                        title={video.title}
+                        className="w-full h-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+
+                    <div className="p-6">
+                      <h3 className="text-xl font-semibold mb-2">
+                        {video.title}
+                      </h3>
+                      <p className="text-gray-600 dark:text-stone-300 mb-3">
+                        {video.description}
+                      </p>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <svg
+                          className="w-4 h-4 mr-1"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                          role="img"
+                          aria-label="Video duration"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Duration: {video.duration}
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
-        </div>
-      )}
+        )}
     </>
   );
 };
 
 export default CookingVideos;
-

@@ -42,18 +42,7 @@ This guide covers everything you need to deploy your Culinaria application to pr
 
 #### Update Firebase Config
 
-Replace the placeholder values in `src/firebase/config.js`:
-
-```javascript
-const firebaseConfig = {
-  apiKey: "your-actual-api-key",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "your-app-id",
-};
-```
+Replace the placeholder values in `src/firebase/config.ts` (or set env vars; the app reads from `import.meta.env`).
 
 ### 2. Environment Variables
 
@@ -74,6 +63,11 @@ VITE_USDA_API_KEY=your-usda-api-key
 # App Configuration
 VITE_APP_NAME=Culinaria
 VITE_APP_URL=https://your-domain.com
+
+# Optional: Social links (Footer)
+VITE_GITHUB_URL=https://github.com/your-username
+VITE_TWITTER_URL=https://x.com/your-handle
+VITE_LINKEDIN_URL=https://linkedin.com/in/your-profile
 ```
 
 ### 3. Update Firebase Config to Use Environment Variables

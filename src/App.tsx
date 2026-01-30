@@ -31,6 +31,7 @@ import { extractIngredientsFromRecipe } from "./utils/apiUtils";
 import Toast from "./components/Toast";
 import { AuthProvider } from "./contexts/AuthContext";
 import type { Recipe } from "./global";
+import { featuredRecipes, featuredRecipeToRecipe } from "./data/recipes";
 
 // Lazy load components for better performance
 const MainLayout = lazy(() => import("./components/MainLayout"));
@@ -38,7 +39,7 @@ const MainRoutes = lazy(() => import("./components/MainRoutes"));
 
 function App() {
   const navigate = useNavigate();
-  const [selected, setSelected] = useState(null);
+  const [selected, setSelected] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasUserSearched, setHasUserSearched] = useState(false);
@@ -95,7 +96,7 @@ function App() {
       recipe.strInstructions?.toLowerCase() || "",
       ...Array.from(
         { length: 20 },
-        (_, i) => recipe[`strIngredient${i + 1}`]?.toLowerCase() || ""
+        (_, i) => recipe[`strIngredient${i + 1}`]?.toLowerCase() || "",
       ),
     ].join(" ");
 
@@ -114,7 +115,7 @@ function App() {
 
       try {
         const url = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(
-          query.trim()
+          query.trim(),
         )}`;
 
         const json = await performanceService.cachedFetch(url);
@@ -129,14 +130,14 @@ function App() {
 
         // Filter out recipes containing pork or alcohol
         const filteredMeals = meals.filter(
-          (meal: Recipe) => !containsPorkOrAlcohol(meal)
+          (meal: Recipe) => !containsPorkOrAlcohol(meal),
         );
 
         if (!filteredMeals.length) {
           setSelected(null);
           setError(null);
           setToast(
-            `No suitable recipes found for "${query}". Try searching for something else!`
+            `No suitable recipes found for "${query}". Try searching for something else!`,
           );
           return;
         }
@@ -172,11 +173,36 @@ function App() {
         setLoading(false);
       }
     },
-    [fetchNutritionData, setNutritionData, navigate]
+    [fetchNutritionData, setNutritionData, navigate],
   );
 
   // Original initial search logic
   const initialSearch = useMemo(() => "", []);
+
+  // When navigating to /recipe/:id, resolve from featured or TheMealDB
+  useEffect(() => {
+    const match = location.pathname.match(/^\/recipe\/([^/]+)$/);
+    if (!match) return;
+    const id = match[1];
+    const featured = featuredRecipes.find((r) => r.id === id);
+    if (featured) {
+      setSelected(featuredRecipeToRecipe(featured));
+      return;
+    }
+    let cancelled = false;
+    const url = `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${encodeURIComponent(id)}`;
+    performanceService
+      .cachedFetch(url)
+      .then((json: { meals?: Recipe[] }) => {
+        if (!cancelled) setSelected(json.meals?.[0] ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setSelected(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [location.pathname]);
 
   useEffect(() => {
     // Only perform initial search if not on auth page
@@ -186,8 +212,8 @@ function App() {
   }, [handleSearch, initialSearch, isAuthPage]);
 
   return (
-    <SecurityProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <SecurityProvider>
         <HelmetProvider>
           <ModalProvider>
             <DarkModeProvider>
@@ -217,8 +243,8 @@ function App() {
             </DarkModeProvider>
           </ModalProvider>
         </HelmetProvider>
-      </AuthProvider>
-    </SecurityProvider>
+      </SecurityProvider>
+    </AuthProvider>
   );
 }
 

@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import type { Recipe, NutritionData } from "../global";
 import LoadingSpinner from "./LoadingSpinner";
 import HomePage from "../features/recipes/Home";
@@ -21,7 +21,6 @@ import SeasonalIngredients from "./SeasonalIngredients";
 import SmartNotifications from "./SmartNotifications";
 import AdvancedAnalytics from "./AdvancedAnalytics";
 import RecipeDetailsSection from "../features/recipes/RecipeDetailsSection";
-import PremiumFeatures from "./PremiumFeatures";
 import { useDarkMode } from "../contexts/DarkModeContext";
 import CategoriesPage from "./CategoriesPage";
 import RecommendationsPage from "./RecommendationsPage";
@@ -44,7 +43,6 @@ export default function MainRoutes({
 }: MainRoutesProps) {
   const darkModeContext = useDarkMode();
   const darkMode = darkModeContext?.darkMode || false;
-  const navigate = useNavigate();
 
   const routes: { path: string; element: React.ReactNode }[] = [
     {
@@ -120,12 +118,6 @@ export default function MainRoutes({
     {
       path: "/analytics",
       element: <AdvancedAnalytics darkMode={darkMode} />,
-    },
-    {
-      path: "/premium",
-      element: (
-        <PremiumFeatures darkMode={darkMode} onClose={() => navigate(-1)} />
-      ),
     },
     {
       path: "/categories",

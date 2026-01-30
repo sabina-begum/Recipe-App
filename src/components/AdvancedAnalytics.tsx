@@ -11,8 +11,14 @@
  * Educational use only - Commercial use prohibited.
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useAuth } from "../contexts/useAuth";
+import { computeAdvancedAnalytics } from "../utils/advancedAnalyticsUtils";
+import type {
+  AnalyticsData,
+  Achievement,
+  Recommendation,
+} from "../utils/advancedAnalyticsUtils";
 import {
   TrendingUp,
   Clock,
@@ -24,213 +30,30 @@ import {
   BarChart3,
 } from "lucide-react";
 
-interface CookingStats {
-  totalRecipesCooked: number;
-  totalCookingTime: number;
-  averageRating: number;
-  favoriteCuisine: string;
-  mostCookedRecipe: string;
-  weeklyGoal: number;
-  weeklyProgress: number;
-  monthlyTrend: string;
-  cookingStreak: number;
-  [key: string]: unknown;
-}
-interface SearchPattern {
-  query: string;
-  count: number;
-}
-interface PeakCookingTime {
-  hour: number;
-  count: number;
-}
-interface DeviceUsage {
-  mobile: number;
-  desktop: number;
-  tablet: number;
-}
-interface UserBehavior {
-  searchPatterns: SearchPattern[];
-  peakCookingTimes: PeakCookingTime[];
-  deviceUsage: DeviceUsage;
-  sessionDuration: number;
-  bounceRate: number;
-  [key: string]: unknown;
-}
-interface Preferences {
-  dietaryRestrictions: string[];
-  spiceLevel: string;
-  cookingSkill: string;
-  preferredCuisines: string[];
-  mealTypes: string[];
-  timeConstraints: string;
-  [key: string]: unknown;
-}
-interface Achievement {
-  id: number;
-  name: string;
-  description: string;
-  earned: boolean;
-  date?: string;
-  progress?: number;
-}
-interface Recommendation {
-  type: string;
-  title: string;
-  reason: string;
-  confidence: number;
-}
-interface AnalyticsData {
-  cookingStats: CookingStats;
-  userBehavior: UserBehavior;
-  preferences: Preferences;
-  achievements: Achievement[];
-  recommendations: Recommendation[];
-  [key: string]: unknown;
-}
 interface AdvancedAnalyticsProps {
   darkMode: boolean;
 }
 
 const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({ darkMode }) => {
-  const { currentUser } = useAuth();
-  const [analytics, setAnalytics] = useState<AnalyticsData>({
-    cookingStats: {} as CookingStats,
-    userBehavior: {} as UserBehavior,
-    preferences: {} as Preferences,
-    achievements: [],
-    recommendations: [],
-  });
+  const { currentUser, isDemoUser } = useAuth();
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [timeRange, setTimeRange] = useState<string>("30d");
 
-  // Generate mock analytics data
-  const generateMockAnalytics = useCallback(() => {
-    return {
-      cookingStats: {
-        totalRecipesCooked: 47,
-        totalCookingTime: 89.5,
-        averageRating: 4.2,
-        favoriteCuisine: "Italian",
-        mostCookedRecipe: "Spaghetti Carbonara",
-        weeklyGoal: 3,
-        weeklyProgress: 2,
-        monthlyTrend: "+15%",
-        cookingStreak: 12,
-      },
-      userBehavior: {
-        searchPatterns: [
-          { query: "pasta", count: 15 },
-          { query: "chicken", count: 12 },
-          { query: "dessert", count: 8 },
-          { query: "vegetarian", count: 6 },
-          { query: "quick meals", count: 10 },
-        ],
-        peakCookingTimes: [
-          { hour: 18, count: 25 },
-          { hour: 19, count: 20 },
-          { hour: 20, count: 15 },
-          { hour: 12, count: 10 },
-          { hour: 13, count: 8 },
-        ],
-        deviceUsage: {
-          mobile: 65,
-          desktop: 30,
-          tablet: 5,
-        },
-        sessionDuration: 8.5,
-        bounceRate: 0.15,
-      },
-      preferences: {
-        dietaryRestrictions: ["Vegetarian", "Gluten-Free"],
-        spiceLevel: "Medium",
-        cookingSkill: "Intermediate",
-        preferredCuisines: ["Italian", "Mexican", "Asian"],
-        mealTypes: ["Dinner", "Lunch", "Breakfast"],
-        timeConstraints: "30-60 minutes",
-      },
-      achievements: [
-        {
-          id: 1,
-          name: "First Recipe",
-          description: "Cooked your first recipe",
-          earned: true,
-          date: "2024-01-15",
-        },
-        {
-          id: 2,
-          name: "Week Warrior",
-          description: "Cooked 7 days in a row",
-          earned: true,
-          date: "2024-01-22",
-        },
-        {
-          id: 3,
-          name: "Cuisine Explorer",
-          description: "Tried 5 different cuisines",
-          earned: true,
-          date: "2024-02-01",
-        },
-        {
-          id: 4,
-          name: "Master Chef",
-          description: "Cooked 50 recipes",
-          earned: false,
-          progress: 47,
-        },
-        {
-          id: 5,
-          name: "Social Butterfly",
-          description: "Shared 10 recipes",
-          earned: false,
-          progress: 3,
-        },
-      ],
-      recommendations: [
-        {
-          type: "recipe",
-          title: "Try Risotto ai Funghi",
-          reason: "Based on your love for Italian cuisine",
-          confidence: 0.92,
-        },
-        {
-          type: "skill",
-          title: "Master Knife Skills",
-          reason: "Improve your cooking efficiency",
-          confidence: 0.88,
-        },
-        {
-          type: "cuisine",
-          title: "Explore Thai Cuisine",
-          reason: "Similar to your preferred flavors",
-          confidence: 0.85,
-        },
-      ],
-    };
-  }, []);
-
-  const loadAnalytics = useCallback(async () => {
+  const loadAnalytics = useCallback(() => {
+    if (!currentUser) return;
     setLoading(true);
     try {
-      // Load from localStorage (simulated database)
-      const userData = JSON.parse(
-        localStorage.getItem(`analytics_${currentUser?.uid}`) || "{}"
-      );
-
-      // Generate mock data if none exists
-      const mockData = generateMockAnalytics();
-      const analyticsData =
-        Object.keys(userData).length > 0 ? userData : mockData;
-
-      setAnalytics(analyticsData);
+      const computed = computeAdvancedAnalytics(currentUser.uid, !!isDemoUser);
+      setAnalytics(computed);
     } catch (error) {
-      console.error("Error loading analytics:", error);
+      console.error("Error computing advanced analytics:", error);
+      setAnalytics(null);
     } finally {
       setLoading(false);
     }
-  }, [currentUser, generateMockAnalytics]);
+  }, [currentUser, isDemoUser]);
 
-  // Load analytics data
   useEffect(() => {
     if (currentUser) {
       loadAnalytics();
@@ -307,35 +130,46 @@ const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({ darkMode }) => {
   //   });
   // }, []);
 
-  // Calculate cooking efficiency score
+  // Calculate cooking efficiency score (safe when analytics is null)
   const cookingEfficiencyScore = useMemo(() => {
+    if (!analytics) return 0;
     const { cookingStats } = analytics;
+    const totalTime = cookingStats.totalCookingTime ?? 0;
     const recipesPerHour =
-      cookingStats.totalRecipesCooked / (cookingStats.totalCookingTime || 1);
-    const ratingBonus = (cookingStats.averageRating - 3) * 0.2;
-    const streakBonus = Math.min(cookingStats.cookingStreak / 10, 0.3);
-
+      totalTime > 0 ? cookingStats.totalRecipesCooked / totalTime : 0;
+    const ratingBonus = ((cookingStats.averageRating ?? 0) - 3) * 0.2;
+    const streakBonus = Math.min((cookingStats.cookingStreak ?? 0) / 10, 0.3);
     return Math.min(
       100,
-      Math.round((recipesPerHour * 10 + ratingBonus + streakBonus) * 100)
+      Math.max(
+        0,
+        Math.round((recipesPerHour * 10 + ratingBonus + streakBonus) * 100),
+      ),
     );
   }, [analytics]);
 
-  // Get cooking insights
+  // Get cooking insights (safe when analytics is null)
   const cookingInsights = useMemo(() => {
-    const insights = [];
+    if (!analytics) return [];
+    const insights: Array<{
+      type: string;
+      icon: React.ReactNode;
+      title: string;
+      message: string;
+    }> = [];
     const { cookingStats, userBehavior } = analytics;
+    const weeklyGoal = cookingStats.weeklyGoal ?? 3;
 
-    if (cookingStats.weeklyProgress >= cookingStats.weeklyGoal) {
+    if (weeklyGoal > 0 && (cookingStats.weeklyProgress ?? 0) >= weeklyGoal) {
       insights.push({
         type: "success",
         icon: <Target className="w-4 h-4" />,
         title: "Goal Achieved!",
-        message: `You've met your weekly cooking goal of ${cookingStats.weeklyGoal} recipes`,
+        message: `You've met your weekly cooking goal of ${weeklyGoal} recipes`,
       });
     }
 
-    if (cookingStats.cookingStreak >= 7) {
+    if ((cookingStats.cookingStreak ?? 0) >= 7) {
       insights.push({
         type: "success",
         icon: <TrendingUp className="w-4 h-4" />,
@@ -344,7 +178,7 @@ const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({ darkMode }) => {
       });
     }
 
-    if (userBehavior.sessionDuration > 10) {
+    if ((userBehavior.sessionDuration ?? 0) > 10) {
       insights.push({
         type: "info",
         icon: <Clock className="w-4 h-4" />,
@@ -365,6 +199,30 @@ const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({ darkMode }) => {
       >
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
         <span className="ml-3">Loading analytics...</span>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <div
+        className={`text-center py-8 ${
+          darkMode ? "text-gray-300" : "text-gray-600"
+        }`}
+      >
+        Please log in to view your advanced analytics.
+      </div>
+    );
+  }
+
+  if (!analytics) {
+    return (
+      <div
+        className={`text-center py-8 ${
+          darkMode ? "text-gray-300" : "text-gray-600"
+        }`}
+      >
+        Unable to load analytics. Please try again.
       </div>
     );
   }
@@ -576,74 +434,84 @@ const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({ darkMode }) => {
           Achievements
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {analytics.achievements.map((achievement) => (
-            <div
-              key={achievement.id}
-              className={`p-4 rounded-lg border ${
-                achievement.earned
-                  ? darkMode
-                    ? "bg-green-900 border-green-600"
-                    : "bg-green-50 border-green-200"
-                  : darkMode
-                  ? "bg-gray-700 border-gray-500"
-                  : "bg-gray-50 border-gray-200"
+          {analytics.achievements.length === 0 ? (
+            <p
+              className={`col-span-full text-center py-4 text-sm ${
+                darkMode ? "text-gray-400" : "text-gray-600"
               }`}
             >
-              <div className="flex items-center space-x-3">
-                <div
-                  className={`p-2 rounded-full ${
-                    achievement.earned
-                      ? "bg-green-100 dark:bg-green-800"
-                      : "bg-stone-100 dark:bg-stone-600"
-                  }`}
-                >
-                  <Award
-                    className={`w-5 h-5 ${
+              Add recipes to favorites or collections to earn achievements.
+            </p>
+          ) : (
+            analytics.achievements.map((achievement: Achievement) => (
+              <div
+                key={achievement.id}
+                className={`p-4 rounded-lg border ${
+                  achievement.earned
+                    ? darkMode
+                      ? "bg-green-900 border-green-600"
+                      : "bg-green-50 border-green-200"
+                    : darkMode
+                      ? "bg-gray-700 border-gray-500"
+                      : "bg-gray-50 border-gray-200"
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div
+                    className={`p-2 rounded-full ${
                       achievement.earned
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-gray-400"
-                    }`}
-                  />
-                </div>
-                <div className="flex-1">
-                  <p
-                    className={`font-semibold ${
-                      achievement.earned
-                        ? darkMode
-                          ? "text-white"
-                          : "text-gray-900"
-                        : darkMode
-                        ? "text-gray-400"
-                        : "text-gray-600"
+                        ? "bg-green-100 dark:bg-green-800"
+                        : "bg-stone-100 dark:bg-stone-600"
                     }`}
                   >
-                    {achievement.name}
-                  </p>
-                  <p
-                    className={`text-sm ${
-                      darkMode ? "text-gray-300" : "text-gray-600"
-                    }`}
-                  >
-                    {achievement.description}
-                  </p>
-                  {!achievement.earned && achievement.progress && (
-                    <div className="mt-2">
-                      <div className="flex justify-between text-xs text-gray-500">
-                        <span>Progress</span>
-                        <span>{achievement.progress}%</span>
+                    <Award
+                      className={`w-5 h-5 ${
+                        achievement.earned
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-gray-400"
+                      }`}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p
+                      className={`font-semibold ${
+                        achievement.earned
+                          ? darkMode
+                            ? "text-white"
+                            : "text-gray-900"
+                          : darkMode
+                            ? "text-gray-400"
+                            : "text-gray-600"
+                      }`}
+                    >
+                      {achievement.name}
+                    </p>
+                    <p
+                      className={`text-sm ${
+                        darkMode ? "text-gray-300" : "text-gray-600"
+                      }`}
+                    >
+                      {achievement.description}
+                    </p>
+                    {!achievement.earned && achievement.progress && (
+                      <div className="mt-2">
+                        <div className="flex justify-between text-xs text-gray-500">
+                          <span>Progress</span>
+                          <span>{achievement.progress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                          <div
+                            className="bg-orange-500 h-2 rounded-full"
+                            style={{ width: `${achievement.progress}%` }}
+                          ></div>
+                        </div>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                        <div
-                          className="bg-orange-500 h-2 rounded-full"
-                          style={{ width: `${achievement.progress}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -661,46 +529,58 @@ const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({ darkMode }) => {
           Personalized Recommendations
         </h3>
         <div className="space-y-4">
-          {analytics.recommendations.map((rec, index) => (
-            <div
-              key={index}
-              className={`p-4 rounded-lg border ${
-                darkMode
-                  ? "bg-gray-700 border-gray-500"
-                  : "bg-orange-50 border-orange-200"
+          {analytics.recommendations.length === 0 ? (
+            <p
+              className={`text-center py-4 text-sm ${
+                darkMode ? "text-gray-400" : "text-gray-600"
               }`}
             >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <p
-                    className={`font-semibold ${
-                      darkMode ? "text-white" : "text-gray-900"
-                    }`}
-                  >
-                    {rec.title}
-                  </p>
-                  <p
-                    className={`text-sm ${
-                      darkMode ? "text-gray-300" : "text-gray-600"
-                    }`}
-                  >
-                    {rec.reason}
-                  </p>
+              Add more recipes to get personalized recommendations.
+            </p>
+          ) : (
+            analytics.recommendations.map(
+              (rec: Recommendation, index: number) => (
+                <div
+                  key={index}
+                  className={`p-4 rounded-lg border ${
+                    darkMode
+                      ? "bg-gray-700 border-gray-500"
+                      : "bg-orange-50 border-orange-200"
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p
+                        className={`font-semibold ${
+                          darkMode ? "text-white" : "text-gray-900"
+                        }`}
+                      >
+                        {rec.title}
+                      </p>
+                      <p
+                        className={`text-sm ${
+                          darkMode ? "text-gray-300" : "text-gray-600"
+                        }`}
+                      >
+                        {rec.reason}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p
+                        className={`text-sm font-medium ${
+                          rec.confidence > 0.9
+                            ? "text-green-600"
+                            : "text-orange-600"
+                        }`}
+                      >
+                        {Math.round(rec.confidence * 100)}% match
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p
-                    className={`text-sm font-medium ${
-                      rec.confidence > 0.9
-                        ? "text-green-600"
-                        : "text-orange-600"
-                    }`}
-                  >
-                    {Math.round(rec.confidence * 100)}% match
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
+              ),
+            )
+          )}
         </div>
       </div>
     </div>

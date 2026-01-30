@@ -45,86 +45,18 @@ const SmartNotifications = ({ darkMode }: { darkMode: boolean }) => {
   });
   const [showSettings, setShowSettings] = useState(false);
 
-  // Sample notifications data
-  const getDemoNotifications = () => [
-    {
-      id: 1,
-      type: "meal_prep",
-      title: "Meal Prep Reminder",
-      message:
-        "Time to prep your weekly meals! You have 3 recipes planned for this week.",
-      time: "2 hours ago",
-      read: false,
-      priority: "high",
-    },
-    {
-      id: 2,
-      type: "cooking_timer",
-      title: "Cooking Timer",
-      message:
-        "Your chicken is ready! Remove from oven and let rest for 5 minutes.",
-      time: "5 minutes ago",
-      read: true,
-      priority: "medium",
-    },
-    {
-      id: 3,
-      type: "ingredient_expiry",
-      title: "Ingredient Expiry Alert",
-      message:
-        "Your milk expires tomorrow. Consider using it in a recipe today.",
-      time: "1 day ago",
-      read: false,
-      priority: "high",
-    },
-    {
-      id: 4,
-      type: "recipe_suggestion",
-      title: "Recipe Suggestion",
-      message:
-        "Based on your preferences, try our new 'Mediterranean Quinoa Bowl' recipe!",
-      time: "2 days ago",
-      read: true,
-      priority: "low",
-    },
-    {
-      id: 5,
-      type: "shopping_reminder",
-      title: "Shopping Reminder",
-      message:
-        "Your shopping list has 8 items. Don't forget to pick up ingredients for this week's meals.",
-      time: "3 days ago",
-      read: false,
-      priority: "medium",
-    },
-    {
-      id: 6,
-      type: "nutrition_goal",
-      title: "Nutrition Goal Update",
-      message:
-        "Great job! You've met 80% of your weekly protein goal. Keep it up!",
-      time: "4 days ago",
-      read: true,
-      priority: "low",
-    },
-  ];
-
   const loadNotifications = useCallback(() => {
     if (!currentUser) return;
     try {
-      if (isDemoUser) {
-        setNotifications(getDemoNotifications());
-      } else {
-        const savedNotifications = JSON.parse(
-          localStorage.getItem(`notifications_${currentUser.uid}`) || "[]",
-        );
-        setNotifications(savedNotifications);
-      }
+      const savedNotifications = JSON.parse(
+        localStorage.getItem(`notifications_${currentUser.uid}`) || "[]",
+      );
+      setNotifications(savedNotifications);
     } catch (error) {
       console.error("Error loading notifications:", error);
       setNotifications([]);
     }
-  }, [currentUser, isDemoUser]);
+  }, [currentUser]);
 
   const loadSettings = useCallback(() => {
     if (!currentUser) return;
@@ -170,34 +102,28 @@ const SmartNotifications = ({ darkMode }: { darkMode: boolean }) => {
 
   const markAsRead = (notificationId: number) => {
     if (!currentUser) return;
-    setNotifications((prev: Notification[]) =>
-      prev.map((notification: Notification) =>
-        notification.id === notificationId
-          ? { ...notification, read: true }
-          : notification,
-      ),
+    const updated = notifications.map((n: Notification) =>
+      n.id === notificationId ? { ...n, read: true } : n,
     );
-
+    setNotifications(updated);
     if (!isDemoUser) {
       localStorage.setItem(
         `notifications_${currentUser.uid}`,
-        JSON.stringify(notifications),
+        JSON.stringify(updated),
       );
     }
   };
 
   const deleteNotification = (notificationId: number) => {
     if (!currentUser) return;
-    setNotifications((prev: Notification[]) =>
-      prev.filter(
-        (notification: Notification) => notification.id !== notificationId,
-      ),
+    const updated = notifications.filter(
+      (n: Notification) => n.id !== notificationId,
     );
-
+    setNotifications(updated);
     if (!isDemoUser) {
       localStorage.setItem(
         `notifications_${currentUser.uid}`,
-        JSON.stringify(notifications),
+        JSON.stringify(updated),
       );
     }
   };
@@ -478,4 +404,3 @@ const SmartNotifications = ({ darkMode }: { darkMode: boolean }) => {
 };
 
 export default SmartNotifications;
-

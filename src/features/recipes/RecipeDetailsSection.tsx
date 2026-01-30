@@ -95,7 +95,11 @@ export default function RecipeDetailsSection({
         <LeftoverIntegration recipe={selected} darkMode={darkMode} />
       </div>
       <div className="p-4">
-        <RecipeReviews recipeId={selected.idMeal} darkMode={darkMode} />
+        <RecipeReviews
+          recipeId={selected.idMeal}
+          recipeName={selected.strMeal}
+          darkMode={darkMode}
+        />
       </div>
     </div>
   );

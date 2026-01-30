@@ -26,6 +26,8 @@ interface RecipeRecommendation {
   idMeal: string;
   strMeal: string;
   strMealThumb: string;
+  /** Category used to fetch this recipe (for display). */
+  category?: string;
   [key: string]: unknown;
 }
 interface AIRecommendationsProps {
@@ -55,20 +57,26 @@ function AIRecommendations({
       // Fetch recipes based on preferences
       const recommendations: RecipeRecommendation[] = [];
 
-      // Get recipes by category
+      // Get recipes by category (tag with category for display)
       for (const category of favoriteCategories.slice(0, 3)) {
         const response = await fetch(
-          `https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`
+          `https://www.themealdb.com/api/json/v1/1/filter.php?c=${category}`,
         );
         const data = await response.json();
         if (data.meals) {
-          recommendations.push(...data.meals.slice(0, 2));
+          const tagged = data.meals
+            .slice(0, 2)
+            .map((m: RecipeRecommendation) => ({
+              ...m,
+              category,
+            }));
+          recommendations.push(...tagged);
         }
       }
 
-      // Get random recipes for variety
+      // Get random recipes for variety (no category label)
       const randomResponse = await fetch(
-        "https://www.themealdb.com/api/json/v1/1/random.php"
+        "https://www.themealdb.com/api/json/v1/1/random.php",
       );
       const randomData = await randomResponse.json();
       if (randomData.meals) {
@@ -204,7 +212,9 @@ function AIRecommendations({
                   darkMode ? "text-stone-300" : "text-gray-600"
                 }`}
               >
-                Recommended for you
+                {recipe.category
+                  ? `From your ${recipe.category} preferences`
+                  : "Recommended for you"}
               </p>
             </div>
           </div>

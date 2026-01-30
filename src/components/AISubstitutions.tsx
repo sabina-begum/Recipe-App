@@ -32,7 +32,7 @@ function AISubstitutions({ darkMode, ingredients }: AISubstitutionsProps) {
   const [substitutions, setSubstitutions] = useState<Substitution[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // AI substitution database
+  // Substitution database (real culinary data, no mock)
   const substitutionDatabase: SubstitutionDatabase = {
     eggs: [
       {
@@ -128,44 +128,44 @@ function AISubstitutions({ darkMode, ingredients }: AISubstitutionsProps) {
         Object.keys(substitutionDatabase).some(
           (dbIngredient) =>
             ingredient.toLowerCase().includes(dbIngredient) ||
-            dbIngredient.includes(ingredient.toLowerCase())
-        )
+            dbIngredient.includes(ingredient.toLowerCase()),
+        ),
       )
       .slice(0, 5); // Limit to 5 suggestions
   }, [ingredients]);
 
   const findSubstitutions = (ingredient: string) => {
     setLoading(true);
+    const normalizedIngredient = ingredient.toLowerCase().trim();
+    const found = substitutionDatabase[normalizedIngredient] || [];
 
-    // Simulate AI processing
-    setTimeout(() => {
-      const normalizedIngredient = ingredient.toLowerCase().trim();
-      const found = substitutionDatabase[normalizedIngredient] || [];
-
-      if (found.length === 0) {
-        // Try partial matches
-        const partialMatches = Object.keys(substitutionDatabase).filter(
-          (key: string) =>
-            key.includes(normalizedIngredient) ||
-            normalizedIngredient.includes(key)
-        );
-
-        if (partialMatches.length > 0) {
-          setSubstitutions(substitutionDatabase[partialMatches[0]]);
-        } else {
-          setSubstitutions([
-            {
-              name: "No specific substitution found",
-              ratio: "",
-              notes: "Consider omitting or using a similar ingredient",
-            },
-          ]);
-        }
+    let result: Substitution[];
+    if (found.length === 0) {
+      const partialMatches = Object.keys(substitutionDatabase).filter(
+        (key: string) =>
+          key.includes(normalizedIngredient) ||
+          normalizedIngredient.includes(key),
+      );
+      if (partialMatches.length > 0) {
+        result = substitutionDatabase[partialMatches[0]];
       } else {
-        setSubstitutions(found);
+        result = [
+          {
+            name: "No specific substitution found",
+            ratio: "",
+            notes: "Consider omitting or using a similar ingredient",
+          },
+        ];
       }
+    } else {
+      result = found;
+    }
+
+    // Brief delay so loading state is visible when switching ingredients
+    window.setTimeout(() => {
+      setSubstitutions(result);
       setLoading(false);
-    }, 1000);
+    }, 80);
   };
 
   const handleIngredientSelect = (ingredient: string) => {

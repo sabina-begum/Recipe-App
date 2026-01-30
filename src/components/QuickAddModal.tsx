@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useAuth } from "../contexts/useAuth";
+import { addNotification } from "../utils/notificationUtils";
 
 interface QuickAddModalProps {
   open: boolean;
@@ -6,20 +8,75 @@ interface QuickAddModalProps {
   darkMode: boolean;
 }
 
+interface ShoppingItem {
+  ingredient: string;
+  quantity: string;
+  unit: string;
+  category: string;
+  recipes: string[];
+  checked: boolean;
+  isCustom: boolean;
+}
+
 const QuickAddModal: React.FC<QuickAddModalProps> = ({
   open,
   onClose,
   darkMode,
 }) => {
+  const { currentUser } = useAuth();
   const [name, setName] = useState<string>("");
 
   if (!open) return null;
 
   const handleAdd = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Placeholder: just close modal for now
-    setName("");
-    onClose();
+    if (!name.trim() || !currentUser) {
+      setName("");
+      onClose();
+      return;
+    }
+
+    try {
+      // Load existing shopping list from localStorage
+      const storageKey = `shoppingList_${currentUser.uid}`;
+      const existing = JSON.parse(
+        localStorage.getItem(storageKey) || "[]",
+      ) as ShoppingItem[];
+
+      // Create new item
+      const newItem: ShoppingItem = {
+        ingredient: name.trim(),
+        quantity: "1",
+        unit: "",
+        category: "Produce", // Default category
+        recipes: ["Quick Add"],
+        checked: false,
+        isCustom: true,
+      };
+
+      // Add to list (avoid duplicates)
+      const exists = existing.some(
+        (item) =>
+          item.ingredient.toLowerCase() === newItem.ingredient.toLowerCase(),
+      );
+      if (!exists) {
+        const updated = [...existing, newItem];
+        localStorage.setItem(storageKey, JSON.stringify(updated));
+        addNotification(currentUser.uid, {
+          type: "shopping_reminder",
+          title: "Added to shopping list",
+          message: `"${newItem.ingredient}" was added to your shopping list.`,
+          priority: "low",
+        });
+      }
+
+      setName("");
+      onClose();
+    } catch (error) {
+      console.error("Error adding item to shopping list:", error);
+      setName("");
+      onClose();
+    }
   };
 
   return (
@@ -80,4 +137,3 @@ const QuickAddModal: React.FC<QuickAddModalProps> = ({
 };
 
 export default QuickAddModal;
-

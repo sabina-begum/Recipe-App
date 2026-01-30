@@ -16,8 +16,10 @@ import React, {
   useState,
   createContext,
   useContext,
+  useCallback,
   ReactNode,
 } from "react";
+import { useAuth } from "../contexts/useAuth";
 
 interface SecurityContextValue {
   securityToken: string;
@@ -37,6 +39,7 @@ interface SecurityProviderProps {
 export const SecurityProvider: React.FC<SecurityProviderProps> = ({
   children,
 }) => {
+  const { currentUser } = useAuth();
   const [securityToken, setSecurityToken] = useState<string>("");
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
 
@@ -73,30 +76,26 @@ export const SecurityProvider: React.FC<SecurityProviderProps> = ({
     return { allowed: true, reason: "No rate limit for this action" };
   };
 
-  const logSecurityEvent = (
-    event: string,
-    details: Record<string, unknown> = {},
-  ) => {
-    const timestamp = new Date().toISOString();
-    const securityEvent = {
-      timestamp,
-      event,
-      actionType: "general", // Use actionType for categorization
-      userId: "anonymous",
-      userEmail: "anonymous",
-      ipAddress: "client-side", // In a real app, this would come from server
-      userAgent: navigator.userAgent,
-      details,
-    };
+  const logSecurityEvent = useCallback(
+    (event: string, details: Record<string, unknown> = {}) => {
+      const timestamp = new Date().toISOString();
+      const securityEvent = {
+        timestamp,
+        event,
+        actionType: "general",
+        userId: currentUser?.uid ?? "anonymous",
+        userEmail: (currentUser?.email as string | undefined) ?? "anonymous",
+        ipAddress: "client-side",
+        userAgent: navigator.userAgent,
+        details,
+      };
 
-    // Log to console in development
-    if (import.meta.env.DEV) {
-      console.log("Security Event:", securityEvent);
-    }
-
-    // In production, this would send to a security monitoring service
-    // Example: sendToSecurityService(securityEvent);
-  };
+      if (import.meta.env.DEV) {
+        console.log("Security Event:", securityEvent);
+      }
+    },
+    [currentUser?.uid, currentUser?.email],
+  );
 
   const checkSessionValidity = () => {
     const now = Date.now();
@@ -200,4 +199,3 @@ export const SecurityWrapper: React.FC<SecurityWrapperProps> = ({
     </div>
   );
 };
-

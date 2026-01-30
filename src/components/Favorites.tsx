@@ -75,13 +75,13 @@ const Favorites: React.FC<FavoritesProps> = ({ darkMode }) => {
       if (isDemoUser) {
         // Read from demoUser key
         const demoUserData = JSON.parse(
-          localStorage.getItem("demoUser") || "{}"
+          localStorage.getItem("demoUser") || "{}",
         );
         userFavorites = demoUserData.demoData?.favorites || [];
       } else {
         // Read from favorites_<uid>
         userFavorites = JSON.parse(
-          localStorage.getItem(`favorites_${currentUser.uid}`) || "[]"
+          localStorage.getItem(`favorites_${currentUser.uid}`) || "[]",
         );
       }
 
@@ -91,20 +91,17 @@ const Favorites: React.FC<FavoritesProps> = ({ darkMode }) => {
       if (!isDemoUser) {
         localStorage.setItem(
           `favorites_${currentUser.uid}`,
-          JSON.stringify(normalizedFavorites)
+          JSON.stringify(normalizedFavorites),
         );
       } else {
         // For demo user, update demoUser key if needed
         const demoUserData = JSON.parse(
-          localStorage.getItem("demoUser") || "{}"
+          localStorage.getItem("demoUser") || "{}",
         );
         demoUserData.demoData = demoUserData.demoData || {};
         demoUserData.demoData.favorites = normalizedFavorites;
         localStorage.setItem("demoUser", JSON.stringify(demoUserData));
       }
-
-      // Add some delay to simulate network request
-      await new Promise((resolve) => setTimeout(resolve, 500));
 
       setFavorites(normalizedFavorites);
     } catch (err) {
@@ -122,7 +119,7 @@ const Favorites: React.FC<FavoritesProps> = ({ darkMode }) => {
 
       try {
         const updatedFavorites = favorites.filter(
-          (fav) => (fav.id || fav.recipeId) !== recipeId
+          (fav) => (fav.id || fav.recipeId) !== recipeId,
         );
         setFavorites(updatedFavorites);
 
@@ -130,11 +127,11 @@ const Favorites: React.FC<FavoritesProps> = ({ darkMode }) => {
         if (!isDemoUser) {
           localStorage.setItem(
             `favorites_${currentUser.uid}`,
-            JSON.stringify(updatedFavorites)
+            JSON.stringify(updatedFavorites),
           );
         } else {
           const demoUserData = JSON.parse(
-            localStorage.getItem("demoUser") || "{}"
+            localStorage.getItem("demoUser") || "{}",
           );
           demoUserData.demoData = demoUserData.demoData || {};
           demoUserData.demoData.favorites = updatedFavorites;
@@ -145,7 +142,7 @@ const Favorites: React.FC<FavoritesProps> = ({ darkMode }) => {
         setError("Failed to remove favorite");
       }
     },
-    [favorites, currentUser, isDemoUser]
+    [favorites, currentUser, isDemoUser],
   );
 
   // Memoized filter change handler
@@ -190,7 +187,7 @@ const Favorites: React.FC<FavoritesProps> = ({ darkMode }) => {
       { value: "dessert", label: "Desserts", icon: "🍰" },
       { value: "snack", label: "Snacks", icon: "🍿" },
     ],
-    []
+    [],
   );
 
   if (!currentUser) {
@@ -251,8 +248,8 @@ const Favorites: React.FC<FavoritesProps> = ({ darkMode }) => {
                     ? "bg-green-600 text-white shadow-lg"
                     : "bg-green-500 text-white shadow-lg"
                   : darkMode
-                  ? "bg-stone-700 text-stone-200 hover:bg-stone-600"
-                  : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                    ? "bg-stone-700 text-stone-200 hover:bg-stone-600"
+                    : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
               }`}
             >
               <span>{option.icon}</span>

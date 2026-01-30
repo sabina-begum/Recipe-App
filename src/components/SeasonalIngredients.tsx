@@ -12,6 +12,8 @@
  */
 
 import { useState, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
+import { featuredRecipes } from "../data/recipes";
 
 interface Ingredient {
   name: string;
@@ -41,8 +43,13 @@ const SeasonalIngredients = ({ darkMode }: SeasonalIngredientsProps) => {
   const [seasonalIngredients, setSeasonalIngredients] = useState<Ingredient[]>(
     [],
   );
-  const [seasonalRecipes, setSeasonalRecipes] = useState<Recipe[]>([]);
   const [selectedSeason, setSelectedSeason] = useState<string>("");
+
+  // Real recipes from featuredRecipes filtered by selected season
+  const seasonalRecipes = useMemo(
+    () => featuredRecipes.filter((r) => r.seasons?.includes(selectedSeason)),
+    [selectedSeason],
+  );
 
   // Determine current season
   const getCurrentSeason = (): string => {
@@ -377,13 +384,11 @@ const SeasonalIngredients = ({ darkMode }: SeasonalIngredientsProps) => {
     setCurrentSeason(season);
     setSelectedSeason(season);
     setSeasonalIngredients(seasonalData[season]?.ingredients || []);
-    setSeasonalRecipes(seasonalData[season]?.recipes || []);
   }, [seasonalData]);
 
   const handleSeasonChange = (season: string) => {
     setSelectedSeason(season);
     setSeasonalIngredients(seasonalData[season]?.ingredients || []);
-    setSeasonalRecipes(seasonalData[season]?.recipes || []);
   };
 
   const getSeasonColor = (season: string) => {
@@ -502,35 +507,49 @@ const SeasonalIngredients = ({ darkMode }: SeasonalIngredientsProps) => {
           </div>
         </div>
 
-        {/* Seasonal Recipe Suggestions */}
+        {/* Seasonal Recipe Suggestions (real recipes filtered by season) */}
         <div className="mb-6">
-          <h4 className="text-md font-medium mb-3">Seasonal Recipe Ideas:</h4>
+          <h4 className="text-md font-medium mb-3">Seasonal recipes</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {seasonalRecipes.map((recipe, index) => (
-              <div
-                key={index}
-                className={`p-3 rounded-lg border ${
-                  darkMode
-                    ? "bg-indigo-700/50 border-indigo-500"
-                    : "bg-indigo-100 border-indigo-300"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h5 className="font-medium text-sm">{recipe.name}</h5>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${getSeasonBgColor(
-                      selectedSeason,
-                    )} ${getSeasonColor(selectedSeason)}`}
-                  >
-                    {recipe.difficulty}
-                  </span>
-                </div>
-                <div className="text-xs text-gray-600 dark:text-stone-300 space-y-1">
-                  <div>⏱️ {recipe.time}</div>
-                  <div>🍽️ {recipe.category}</div>
-                </div>
-              </div>
-            ))}
+            {seasonalRecipes.length === 0 ? (
+              <p className="text-sm opacity-80">
+                No recipes tagged for this season yet.
+              </p>
+            ) : (
+              seasonalRecipes.map((recipe) => (
+                <Link
+                  key={recipe.id}
+                  to={`/recipe/${recipe.id}`}
+                  className={`block p-3 rounded-lg border transition ${
+                    darkMode
+                      ? "bg-indigo-700/50 border-indigo-500 hover:border-indigo-400"
+                      : "bg-indigo-100 border-indigo-300 hover:border-indigo-500"
+                  }`}
+                >
+                  {recipe.image && (
+                    <img
+                      src={recipe.image}
+                      alt={recipe.name}
+                      className="w-full h-24 object-cover rounded mb-2"
+                    />
+                  )}
+                  <div className="flex items-center justify-between mb-2">
+                    <h5 className="font-medium text-sm">{recipe.name}</h5>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getSeasonBgColor(
+                        selectedSeason,
+                      )} ${getSeasonColor(selectedSeason)}`}
+                    >
+                      {recipe.difficulty ?? "—"}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-stone-300 space-y-1">
+                    <div>⏱️ {recipe.time ?? "—"}</div>
+                    <div>🍽️ {recipe.category ?? "—"}</div>
+                  </div>
+                </Link>
+              ))
+            )}
           </div>
         </div>
 
@@ -574,4 +593,3 @@ const SeasonalIngredients = ({ darkMode }: SeasonalIngredientsProps) => {
 };
 
 export default SeasonalIngredients;
-

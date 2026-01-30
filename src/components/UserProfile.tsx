@@ -37,7 +37,7 @@ interface UserProfileProps {
 }
 
 const UserProfile = ({ darkMode }: UserProfileProps) => {
-  const { currentUser } = useAuth();
+  const { currentUser, isDemoUser } = useAuth();
   const [profile, setProfile] = useState<UserProfileData>({
     displayName: "",
     dailyCalories: 0,
@@ -53,11 +53,28 @@ const UserProfile = ({ darkMode }: UserProfileProps) => {
   const loadUserProfile = useCallback(async () => {
     if (!currentUser) return;
     try {
+      if (isDemoUser) {
+        const key = `user_${currentUser.uid}`;
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          const data = JSON.parse(stored) as Partial<UserProfileData>;
+          setProfile((prev) => ({
+            ...prev,
+            displayName: data.displayName ?? currentUser.displayName ?? "",
+            dailyCalories: data.dailyCalories ?? 0,
+            proteinGoal: data.proteinGoal ?? 0,
+            carbsGoal: data.carbsGoal ?? 0,
+            fatGoal: data.fatGoal ?? 0,
+            dietaryRestrictions: data.dietaryRestrictions ?? [],
+            favoriteCuisines: data.favoriteCuisines ?? [],
+          }));
+          return;
+        }
+      }
       const userDoc = await getDoc(doc(db, "users", currentUser.uid));
       if (userDoc.exists()) {
         setProfile(userDoc.data() as UserProfileData);
       } else {
-        // Set default profile
         setProfile((prev: typeof profile) => ({
           ...prev,
           displayName: currentUser.displayName || "",
@@ -66,7 +83,7 @@ const UserProfile = ({ darkMode }: UserProfileProps) => {
     } catch (error) {
       console.error("Error loading profile:", error);
     }
-  }, [currentUser]);
+  }, [currentUser, isDemoUser]);
 
   useEffect(() => {
     if (currentUser) {
@@ -78,12 +95,19 @@ const UserProfile = ({ darkMode }: UserProfileProps) => {
     if (!currentUser) return;
     setLoading(true);
     try {
-      await setDoc(doc(db, "users", currentUser.uid), profile);
+      if (isDemoUser) {
+        const key = `user_${currentUser.uid}`;
+        const existing = JSON.parse(localStorage.getItem(key) || "{}");
+        localStorage.setItem(key, JSON.stringify({ ...existing, ...profile }));
+      } else {
+        await setDoc(doc(db, "users", currentUser.uid), profile);
+      }
       setIsEditing(false);
     } catch (error) {
       console.error("Error saving profile:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   if (!currentUser) {
