@@ -12,6 +12,8 @@
  */
 import { featuredRecipes } from "../../data/recipes";
 import { useState, useMemo, useCallback } from "react";
+import { Link } from "react-router-dom";
+
 import { useAuth } from "../../contexts/useAuth";
 import type { Recipe, NutritionData, User } from "../../global";
 
@@ -31,8 +33,8 @@ import RecipeCard from "./RecipeCard";
 import QuickAccessSection from "../../components/home/QuickAccessSection";
 import { useFavorites } from "../../hooks/useFavorites";
 import RecipeMetaHelmet from "../../components/RecipeMetaHelmet";
-// Hero images from featured recipes (real data)
-const heroImages = featuredRecipes.slice(0, 3);
+// Use featured recipes as-is (no seasonal filter) so the small dataset always shows fully
+const getFeaturedRecipes = () => featuredRecipes;
 
 // Word arrays for food description generation
 /** Fallback description when recipe has no description or instructions (deterministic, no random placeholder text). */
@@ -92,8 +94,11 @@ export default function HomePage({
     [],
   );
 
+  const featured = useMemo(() => getFeaturedRecipes(), []);
+
   if (!selected) {
-    const mainFeatured = featuredRecipes[0];
+    const mainFeatured = featured[0];
+    const heroImages = featured.slice(0, 3);
 
     return (
       <div className="bg-main text-main min-h-screen w-full">
@@ -112,7 +117,7 @@ export default function HomePage({
               href="#featured"
               className="inline-block px-8 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold text-lg hover:bg-green-700 transition-colors mb-8 md:mb-0"
             >
-              Explore Featured Recipes
+              Explore featured recipes
             </a>
             <div className="mt-10 border-t pt-8 w-full bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
               <h2 className="text-2xl font-bold mb-2 text-green-700 dark:text-green-300">
@@ -182,13 +187,13 @@ export default function HomePage({
           </div>
         </div>
 
-        {/* Featured Recipes Grid */}
+        {/* Featured recipes (all from dataset) */}
         <section id="featured" className="py-12">
           <h2 className="text-2xl md:text-3xl font-bold mb-6 text-green-900 dark:text-green-300 text-left">
-            Featured Recipes
+            Featured recipes
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {featuredRecipes.slice(0, 4).map((recipe) => (
+            {featured.slice(0, 4).map((recipe) => (
               <div
                 key={recipe.id}
                 className="rounded-xl shadow-lg bg-white dark:bg-neutral-900 border border-border overflow-hidden flex flex-col"
@@ -207,9 +212,12 @@ export default function HomePage({
                   <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
                     {recipe.description}
                   </p>
-                  <button className="mt-auto px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-medium transition">
+                  <Link
+                    to={`/recipe/${recipe.id}`}
+                    className="mt-auto inline-block text-center px-4 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-medium transition"
+                  >
                     View Recipe
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))}
