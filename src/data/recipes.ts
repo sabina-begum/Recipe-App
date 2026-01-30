@@ -1,4 +1,6 @@
 // src/data/recipes.ts
+import type { Recipe } from "../global";
+
 export interface FeaturedRecipe {
   id: string;
   name: string;
@@ -11,6 +13,8 @@ export interface FeaturedRecipe {
   difficulty?: "Easy" | "Medium" | "Hard";
   time?: string;
   category?: string;
+  /** Optional: seasons when this recipe is in season (e.g. ["Fall", "Winter"]) */
+  seasons?: string[];
 }
 
 export const featuredRecipes: FeaturedRecipe[] = [
@@ -27,6 +31,7 @@ export const featuredRecipes: FeaturedRecipe[] = [
     difficulty: "Medium",
     time: "35 min",
     category: "Main",
+    seasons: ["Fall", "Winter"],
   },
   {
     id: "mushroom-soup",
@@ -49,6 +54,7 @@ export const featuredRecipes: FeaturedRecipe[] = [
     difficulty: "Easy",
     time: "25 min",
     category: "Soup",
+    seasons: ["Fall", "Winter"],
   },
   {
     id: "fried-rice",
@@ -70,6 +76,7 @@ export const featuredRecipes: FeaturedRecipe[] = [
     difficulty: "Easy",
     time: "20 min",
     category: "Main",
+    seasons: ["Spring", "Summer"],
   },
   {
     id: "garlic-bread",
@@ -83,5 +90,24 @@ export const featuredRecipes: FeaturedRecipe[] = [
     difficulty: "Easy",
     time: "10 min",
     category: "Side",
+    seasons: ["Spring", "Summer", "Fall", "Winter"],
   },
 ];
+
+/** Map a featured recipe to the global Recipe shape so detail page and components work. */
+export function featuredRecipeToRecipe(f: FeaturedRecipe): Recipe {
+  const r: Recipe = {
+    idMeal: f.id,
+    strMeal: f.name,
+    strCategory: f.category ?? "General",
+    strArea: "",
+    strInstructions: f.description,
+    strMealThumb: f.image,
+    strTags: f.tags?.join(",") ?? "",
+  };
+  (f.ingredients ?? []).slice(0, 20).forEach((ing, i) => {
+    r[`strIngredient${i + 1}`] = ing;
+    r[`strMeasure${i + 1}`] = "";
+  });
+  return r;
+}
