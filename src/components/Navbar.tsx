@@ -35,7 +35,6 @@ const getNavItems = (): NavItem[] => [
   { path: "/about", label: "About", always: true },
   { path: "/profile", label: "Profile", loggedIn: true },
   { path: "/admin", label: "Admin", admin: true },
-  { path: "/premium", label: "Premium", premium: true },
 ];
 
 function Navbar({ handleSearch }: NavbarProps) {
@@ -87,7 +86,7 @@ function Navbar({ handleSearch }: NavbarProps) {
       if (
         profileMenuRef.current &&
         !(profileMenuRef.current as HTMLDivElement).contains(
-          event.target as Node
+          event.target as Node,
         )
       ) {
         setShowProfileMenu(false);
@@ -165,19 +164,11 @@ function Navbar({ handleSearch }: NavbarProps) {
 
   const [logoHover, setLogoHover] = useState(false);
 
-  // Assume currentUser has a 'premium' boolean property if present
-  const isPremiumUser =
-    auth &&
-    typeof auth.currentUser === "object" &&
-    auth.currentUser !== null &&
-    "premium" in auth.currentUser &&
-    Boolean((auth.currentUser as { premium?: boolean }).premium);
   const navItemsToShow = getNavItems().filter(
     (item) =>
       item.always ||
       (item.loggedIn && auth && auth.currentUser) ||
-      (item.admin && false) ||
-      (item.premium && !isPremiumUser)
+      (item.admin && false),
   );
 
   return (
