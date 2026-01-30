@@ -16,7 +16,6 @@ import { Link } from "react-router-dom";
 import AboutFeatures from "./AboutFeatures";
 import AboutTeam from "./AboutTeam";
 import AboutTech from "./AboutTech";
-import AboutStats from "./AboutStats";
 import AboutContact from "./AboutContact";
 
 const About = ({ darkMode }: { darkMode: boolean }) => {
@@ -116,9 +115,6 @@ const About = ({ darkMode }: { darkMode: boolean }) => {
 
         {/* Features Section */}
         <AboutFeatures darkMode={darkMode} />
-
-        {/* Stats Section */}
-        <AboutStats darkMode={darkMode} />
 
         {/* Team Section */}
         <AboutTeam darkMode={darkMode} />
