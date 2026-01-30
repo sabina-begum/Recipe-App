@@ -112,8 +112,8 @@ export default function HomePage({
             <p className="text-lg md:text-xl text-muted-foreground mb-8 text-center md:text-left max-w-xl">
               Browse featured recipes, save favorites, plan meals, and build
               shopping lists—all in one place. Recipes shown don&apos;t include
-              pork or alcohol; cook with halal ingredients from your usual
-              shops.
+              pork or alcohol; enabling you to cook with halal ingredients from
+              your usual shops.
             </p>
             <a
               href="#featured"
