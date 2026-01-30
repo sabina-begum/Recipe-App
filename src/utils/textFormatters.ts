@@ -27,5 +27,7 @@ export const isMeaningfulStep = (step: string): boolean => {
   if (!s) return false;
   if (SYMBOL_ONLY.test(s)) return false;
   if (s.length < 2) return false;
+  // Drop lines that are only "step 1", "Step 2.", etc. (labels, not content)
+  if (/^step\s+\d+\.?$/i.test(s)) return false;
   return true;
 };
