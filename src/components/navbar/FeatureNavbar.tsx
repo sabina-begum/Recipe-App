@@ -85,15 +85,15 @@ function FeatureNavbar({ darkMode }: FeatureNavbarProps) {
       icon: Sparkles,
       items: [
         { label: "All AI Features", path: "/ai-features", icon: Sparkles },
-        { label: "Voice Search", action: "voice", icon: Mic },
+        { label: "Voice Search", path: "/ai-features#voice-search", icon: Mic },
         {
           label: "Smart Recommendations",
-          action: "recommendations",
+          path: "/ai-features#ai-recommendations",
           icon: Lightbulb,
         },
         {
           label: "Ingredient Substitutions",
-          action: "substitutions",
+          path: "/ai-features#ai-substitutions",
           icon: RefreshCw,
         },
       ],
@@ -242,6 +242,7 @@ function FeatureNavbar({ darkMode }: FeatureNavbarProps) {
                     ) : (
                       <button
                         onClick={() =>
+                          "action" in item &&
                           typeof item.action === "string" &&
                           handleAction(item.action)
                         }

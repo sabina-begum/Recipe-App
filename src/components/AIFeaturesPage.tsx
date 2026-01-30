@@ -11,7 +11,8 @@
  * Educational use only - Commercial use prohibited.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Brain,
   Activity,
@@ -35,9 +36,17 @@ interface AIFeaturesPageProps {
 }
 
 function AIFeaturesPage({ darkMode, onSearch }: AIFeaturesPageProps) {
-  // If you have a Recipe type, use it. Otherwise, use 'unknown' for now.
+  const location = useLocation();
   const [selectedRecipe] = useState<unknown>(null);
   const [nutritionData] = useState<unknown>(null);
+
+  useEffect(() => {
+    const hash = location.hash?.slice(1);
+    if (hash) {
+      const el = document.getElementById(hash);
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [location.pathname, location.hash]);
 
   return (
     <>
