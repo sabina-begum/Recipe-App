@@ -12,6 +12,7 @@
  */
 
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import ErrorMessage from "../../components/ErrorMessage";
 import Button from "../../components/ui/Button";
@@ -151,16 +152,16 @@ export default function AZRecipesPage({ darkMode }: AZRecipesPageProps) {
       {!loading && !error && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
           {meals.map((meal) => (
-            <div
+            <Link
               key={meal.idMeal}
-              className={`rounded-lg shadow-2xl border-0 hover:shadow-lg transition-shadow cursor-pointer overflow-hidden 
+              to={`/recipe/${meal.idMeal}`}
+              className={`rounded-lg shadow-2xl border-0 hover:shadow-lg transition-shadow cursor-pointer overflow-hidden block
                 ${
                   darkMode
                     ? "bg-gradient-to-br from-neutral-900 to-neutral-800"
                     : "bg-gradient-to-br from-stone-50 to-stone-100"
                 }`}
             >
-              {/* Image fills card width, fixed aspect ratio, rounded top corners */}
               <div className="w-full aspect-[4/3] bg-stone-100 dark:bg-black overflow-hidden">
                 <OptimizedImage
                   src={meal.strMealThumb}
@@ -178,7 +179,7 @@ export default function AZRecipesPage({ darkMode }: AZRecipesPageProps) {
                   {meal.strMeal}
                 </h2>
               </div>
-            </div>
+            </Link>
           ))}
           {meals.length === 0 && (
             <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16 w-full col-span-full">
