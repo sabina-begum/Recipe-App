@@ -1,9 +1,9 @@
 {
   "references": [],
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["src/*"]
     }
   }
 }
